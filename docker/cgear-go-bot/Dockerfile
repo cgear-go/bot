@@ -12,27 +12,17 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-VERSION=0.1.0-dev
+# Build
+FROM golang:1.15-alpine3.12 as builder
 
-DOCKER=docker
-GO=go
+WORKDIR /tmp/cgear-go
+ADD . .
+RUN go build -o /tmp/cgear-go-bot ./go/bot
 
-define docker_build
-	@echo "Building $(1)..."
-	@$(DOCKER) build \
-		--rm \
-		--tag  github.com/jonathanarnault/cgear-go/$(1):$(VERSION) \
-		--file docker/$(1)/Dockerfile \
-		. &1> /dev/null
-endef
+# Runtime
+FROM scratch
 
-all: containers
+ENV DISCORD_TOKEN=""
 
-.PHONY: containers test
-
-containers: test
-	$(call docker_build,cgear-go-bot)
-
-test:
-	@echo "Running tests..."
-	@$(GO) test ./...
+COPY --from=builder /tmp/cgear-go-bot /app/cgear-go-bot
+ENTRYPOINT [ "/app/cgear-go-bot" ]
