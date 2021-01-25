@@ -21,14 +21,18 @@ define docker_build
 	@echo "Building $(1)..."
 	@$(DOCKER) build \
 		--rm \
+		--label "project=cgear-go" \
+		--build-arg "VERSION=$(VERSION)" \
 		--tag  github.com/jonathanarnault/cgear-go/$(1):$(VERSION) \
-		--file docker/$(1)/Dockerfile \
-		. &1> /dev/null
+		--file docker/$(1)/Dockerfile . > /dev/null
 endef
 
-all: containers
+all: run
 
-.PHONY: containers test
+.PHONY: containers run test
+
+run:
+	@$(GO) run ./go/bot
 
 containers: test
 	$(call docker_build,cgear-go-bot)
