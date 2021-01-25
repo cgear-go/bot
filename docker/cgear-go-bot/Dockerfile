@@ -15,6 +15,10 @@
 # Build
 FROM golang:1.15-alpine3.12 as builder
 
+ENV CGO_ENABLED=0
+ENV GOOS=linux
+ENV GOARCH=amd64
+
 WORKDIR /tmp/cgear-go
 ADD . .
 RUN go build -o /tmp/cgear-go-bot ./go/bot
