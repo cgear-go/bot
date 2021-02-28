@@ -19,8 +19,25 @@ ENV CGO_ENABLED=0
 ENV GOOS=linux
 ENV GOARCH=amd64
 
+ENV USER=cgear-go
+ENV UID=10001
+RUN adduser \    
+    --disabled-password \    
+    --gecos "" \    
+    --home "/nonexistent" \    
+    --shell "/sbin/nologin" \    
+    --no-create-home \    
+    --uid "${UID}" \    
+    "${USER}"
+
 WORKDIR /tmp/cgear-go
-ADD . .
+
+ADD go      go
+ADD go.mod  go.mod
+ADD go.sum  go.sum
+
+RUN go mod download
+RUN go mod verify
 RUN go build -o /tmp/cgear-go-bot ./go/bot
 
 # Runtime
@@ -28,5 +45,14 @@ FROM scratch
 
 ENV DISCORD_TOKEN=""
 
+# Runtime dependencies
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/group /etc/group
+
+# Binary
 COPY --from=builder /tmp/cgear-go-bot /app/cgear-go-bot
+
+USER cgear-go:cgear-go
+
 ENTRYPOINT [ "/app/cgear-go-bot" ]
