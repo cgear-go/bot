@@ -14,7 +14,11 @@
 
 package command
 
-import "errors"
+import (
+	"io"
+	"strconv"
+	"strings"
+)
 
 // Parser represents a command parser
 type Parser interface {
@@ -34,14 +38,47 @@ type parser struct {
 	lexer Lexer
 }
 
-func (parser *parser) ReadInt() (int, error) {
-	return 0, errors.New("Not Implemented")
+func (p *parser) ReadInt() (int, error) {
+	token, err := p.lexer.Next()
+	if err != nil {
+		return 0, err
+	}
+
+	n, err := strconv.Atoi(token)
+	if err != nil {
+		return 0, err
+	}
+
+	return n, nil
 }
 
-func (parser *parser) ReadString() (string, error) {
-	return "", errors.New("Not Implemented")
+func (p *parser) ReadString() (string, error) {
+	token, err := p.lexer.Next()
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }
 
-func (parser *parser) ReadRest() (string, error) {
-	return "", errors.New("Not Implemented")
+func (p *parser) ReadRest() (string, error) {
+	sb := strings.Builder{}
+
+	i := 0
+	for p.lexer.HasNext() {
+		str, err := p.lexer.Next()
+		if err != nil {
+			return "", err
+		}
+
+		if i > 0 {
+			sb.WriteRune(' ')
+		}
+		sb.WriteString(str)
+		i++
+	}
+
+	if i == 0 {
+		return "", io.EOF
+	}
+	return sb.String(), nil
 }

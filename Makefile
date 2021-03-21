@@ -40,3 +40,12 @@ containers: test
 test:
 	@echo "Running tests..."
 	@$(GO) test ./...
+
+test-deps:
+	@go install github.com/golang/mock/mockgen@v1.5.0
+
+test-gen:
+	@mockgen \
+		-destination go/command/lexer_mock_test.go \
+		-package command \
+		github.com/jonathanarnault/cgear-go/go/command Lexer
