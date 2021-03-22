@@ -21,38 +21,47 @@ import (
 // CommandFn is the resolver function for a command
 type CommandFn func(context.Context, Arguments) error
 
-// CommandBuilder allows to build commands
-type CommandBuilder interface {
+// Command allows to build commands
+type Command interface {
 
 	// AddInt adds an integer argument to the command
-	AddInt(name string) CommandBuilder
+	AddInt(name string) Command
 
 	// AddString adds a string argument to the command
-	AddString(name string) CommandBuilder
+	AddString(name string) Command
 
 	// AddRest add the rest of the arguments concatenated with a whitespace to the command
-	AddRest(name string) CommandBuilder
+	AddRest(name string) Command
 
 	// AddResolver sets the command resolver
 	AddResolver(CommandFn)
 }
 
-// commandBuilder is an implementation of `CommandBuilder`
-type commandBuilder struct {
+// command is an implementation of `Command`
+type command struct {
+
+	// parameters holds the command parameters
+	parameters []parameter
+
+	// resolver corresponds to the function that will be executed for the command
+	resolver CommandFn
 }
 
-func (d *commandBuilder) AddInt(name string) CommandBuilder {
-	return nil
+func (c *command) AddInt(name string) Command {
+	c.parameters = append(c.parameters, parameter{name: name, tpe: parameterTypeInt})
+	return c
 }
 
-func (d *commandBuilder) AddString(name string) CommandBuilder {
-	return nil
+func (c *command) AddString(name string) Command {
+	c.parameters = append(c.parameters, parameter{name: name, tpe: parameterTypeString})
+	return c
 }
 
-func (d *commandBuilder) AddRest(name string) CommandBuilder {
-	return nil
+func (c *command) AddRest(name string) Command {
+	c.parameters = append(c.parameters, parameter{name: name, tpe: parameterTypeRest})
+	return c
 }
 
-func (d *commandBuilder) AddResolver(CommandFn) {
-
+func (c *command) AddResolver(resolver CommandFn) {
+	c.resolver = resolver
 }
