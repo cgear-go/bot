@@ -26,12 +26,25 @@ type Arguments interface {
 
 // arguments is an implementation of `Arguments`
 type arguments struct {
+
+	// values holds the arguments map
+	values map[string]interface{}
 }
 
-func (d *arguments) GetInt(name string) int {
-	return 0
+func (a arguments) GetInt(name string) int {
+	switch v := a.values[name].(type) {
+	case int:
+		return v
+	default:
+		return 0
+	}
 }
 
-func (d *arguments) GetString(name string) string {
-	return ""
+func (a arguments) GetString(name string) string {
+	switch v := a.values[name].(type) {
+	case string:
+		return v
+	default:
+		return ""
+	}
 }
