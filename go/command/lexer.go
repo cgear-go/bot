@@ -15,7 +15,11 @@
 //go:generate mockgen -destination lexer_mock_test.go -package command . Lexer
 package command
 
-import "errors"
+import (
+	"io"
+	"strings"
+	"unicode"
+)
 
 // Lexer tokenizes commands
 type Lexer interface {
@@ -29,12 +33,45 @@ type Lexer interface {
 
 // lexer is an implementation of `Lexer`
 type lexer struct {
+	// command holds the command to tokenize
+	command []rune
+
+	// cursor holds the cursor position
+	cursor int
+
+	// length holds the command length
+	length int
+}
+
+func (l *lexer) min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func (l *lexer) advanceCursor() {
+	l.cursor = l.min(l.cursor+1, l.length)
 }
 
 func (l *lexer) HasNext() bool {
-	return false
+	return l.cursor < l.length
 }
 
 func (l *lexer) Next() (string, error) {
-	return "", errors.New("Not Implemented")
+	sb := strings.Builder{}
+	for l.HasNext() {
+		current := l.command[l.cursor]
+		l.advanceCursor()
+
+		if unicode.IsSpace(current) {
+			break
+		}
+		sb.WriteRune(current)
+	}
+
+	if sb.Len() == 0 {
+		return "", io.EOF
+	}
+	return sb.String(), nil
 }
