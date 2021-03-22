@@ -12,29 +12,28 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-//go:generate mockgen -destination lexer_mock_test.go -package command . Lexer
 package command
 
-import "errors"
+// parameterType represents a parameter type
+type parameterType int
 
-// Lexer tokenizes commands
-type Lexer interface {
+const (
+	// parameterTypeInt represents an int parameter
+	parameterTypeInt parameterType = iota
 
-	// HasNext returns true while the lexer has more token to read.
-	HasNext() bool
+	// parameterTypeString represents a string parameter
+	parameterTypeString
 
-	// Next returns the next token as string
-	Next() (string, error)
-}
+	// parameterTypeRest represents a string parameter that holds the rest of the command arguments
+	parameterTypeRest
+)
 
-// lexer is an implementation of `Lexer`
-type lexer struct {
-}
+// parameter represents a command parameter
+type parameter struct {
 
-func (l *lexer) HasNext() bool {
-	return false
-}
+	// name holds the parameter name
+	name string
 
-func (l *lexer) Next() (string, error) {
-	return "", errors.New("Not Implemented")
+	// t holds the parameter type
+	tpe parameterType
 }

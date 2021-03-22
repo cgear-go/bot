@@ -20,7 +20,7 @@ import "errors"
 type Dispatcher interface {
 
 	// AddCommand registers a command to the dispatcher
-	AddCommand(name string) CommandBuilder
+	AddCommand(name string) Command
 
 	// Execute a command
 	Execute(cmd string) error
@@ -30,7 +30,7 @@ type Dispatcher interface {
 type dispatcher struct {
 }
 
-func (d *dispatcher) AddCommand(string) CommandBuilder {
+func (d *dispatcher) AddCommand(string) Command {
 	return nil
 }
 
