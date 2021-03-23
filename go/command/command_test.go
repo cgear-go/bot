@@ -16,10 +16,12 @@ package command
 
 import (
 	"context"
+	"errors"
 	"io"
 	"testing"
 
 	"github.com/franela/goblin"
+	"github.com/golang/mock/gomock"
 )
 
 func TestCommand__AddInt(t *testing.T) {
@@ -143,6 +145,85 @@ func TestCommand(t *testing.T) {
 			g.Assert(command.parameters[2].name).Eql("gym")
 			g.Assert(command.parameters[2].tpe).Eql(parameterTypeRest)
 			g.Assert(command.resolver(nil, nil)).Eql(io.ErrUnexpectedEOF)
+		})
+	})
+}
+func TestCommand__execute(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	g := goblin.Goblin(t)
+	g.Describe("command.AddRest", func() {
+		g.It("Should execute command", func() {
+			parser := NewMockParser(ctrl)
+			parser.EXPECT().
+				ReadInt().
+				Return(1, nil)
+			parser.EXPECT().
+				ReadString().
+				Return("ImBagheera", nil)
+			parser.EXPECT().
+				ReadRest().
+				Return("Fontaine Pépinière", nil)
+
+			command := &command{
+				parameters: []parameter{
+					{
+						name: "count",
+						tpe:  parameterTypeInt,
+					},
+					{
+						name: "name",
+						tpe:  parameterTypeString,
+					},
+					{
+						name: "gym",
+						tpe:  parameterTypeRest,
+					},
+				},
+				resolver: func(context.Context, Arguments) error {
+					return errors.New("1 - ImBagheera - Fontaine Pépinière")
+				},
+			}
+
+			err := command.execute(context.Background(), parser)
+			g.Assert(err.Error()).Eql("1 - ImBagheera - Fontaine Pépinière")
+		})
+
+		g.It("Should return an error if argument parsing fails", func() {
+			command := &command{
+				parameters: []parameter{
+					{
+						name: "count",
+						tpe:  parameterTypeInt,
+					},
+				},
+				resolver: nil,
+			}
+			parser := NewMockParser(ctrl)
+			parser.EXPECT().
+				ReadInt().
+				Return(0, io.EOF)
+
+			g.Assert(command.execute(context.Background(), parser)).Eql(io.EOF)
+		})
+
+		g.It("Should return an error if command fails", func() {
+			command := &command{
+				parameters: []parameter{
+					{
+						name: "count",
+						tpe:  parameterTypeInt,
+					},
+				},
+				resolver: func(context.Context, Arguments) error {
+					return io.ErrUnexpectedEOF
+				},
+			}
+			parser := NewMockParser(ctrl)
+			parser.EXPECT().
+				ReadInt().
+				Return(1, nil)
+
+			g.Assert(command.execute(context.Background(), parser)).Eql(io.ErrUnexpectedEOF)
 		})
 	})
 }

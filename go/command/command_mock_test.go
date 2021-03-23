@@ -5,6 +5,7 @@
 package command
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -85,4 +86,18 @@ func (m *MockCommand) AddString(arg0 string) Command {
 func (mr *MockCommandMockRecorder) AddString(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddString", reflect.TypeOf((*MockCommand)(nil).AddString), arg0)
+}
+
+// execute mocks base method.
+func (m *MockCommand) execute(arg0 context.Context, arg1 Parser) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "execute", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// execute indicates an expected call of execute.
+func (mr *MockCommandMockRecorder) execute(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "execute", reflect.TypeOf((*MockCommand)(nil).execute), arg0, arg1)
 }
