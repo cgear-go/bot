@@ -36,6 +36,9 @@ type Command interface {
 
 	// AddResolver sets the command resolver
 	AddResolver(CommandFn)
+
+	// execute command with the provided context and parser
+	execute(context.Context, Parser) error
 }
 
 // command is an implementation of `Command`
@@ -65,4 +68,31 @@ func (c *command) AddRest(name string) Command {
 
 func (c *command) AddResolver(resolver CommandFn) {
 	c.resolver = resolver
+}
+
+func (c command) execute(ctx context.Context, parser Parser) error {
+	arguments := &arguments{values: make(map[string]interface{})}
+
+	for _, parameter := range c.parameters {
+		var (
+			value interface{}
+			err   error
+		)
+
+		switch parameter.tpe {
+		case parameterTypeInt:
+			value, err = parser.ReadInt()
+		case parameterTypeString:
+			value, err = parser.ReadString()
+		default:
+			value, err = parser.ReadRest()
+		}
+
+		if err != nil {
+			return err
+		}
+		arguments.values[parameter.name] = value
+	}
+
+	return c.resolver(ctx, arguments)
 }
