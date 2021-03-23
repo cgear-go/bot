@@ -61,15 +61,30 @@ func (mr *MockBotMockRecorder) Close() *gomock.Call {
 }
 
 // MessageCreate mocks base method.
-func (m *MockBot) MessageCreate(arg0, arg1 string) error {
+func (m *MockBot) MessageCreate(arg0, arg1 string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MessageCreate", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // MessageCreate indicates an expected call of MessageCreate.
 func (mr *MockBotMockRecorder) MessageCreate(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageCreate", reflect.TypeOf((*MockBot)(nil).MessageCreate), arg0, arg1)
+}
+
+// MessageDelete mocks base method.
+func (m *MockBot) MessageDelete(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageDelete", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MessageDelete indicates an expected call of MessageDelete.
+func (mr *MockBotMockRecorder) MessageDelete(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageDelete", reflect.TypeOf((*MockBot)(nil).MessageDelete), arg0, arg1)
 }

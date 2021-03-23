@@ -37,9 +37,10 @@ func main() {
 	dispatcher.AddCommand("hello").
 		AddString("name").
 		AddResolver(func(ctx context.Context, bot discord.Bot, args command.Arguments) error {
-			return bot.MessageCreate(
+			_, err := bot.MessageCreate(
 				ctx.Value(discord.ContextChannelID).(string),
 				fmt.Sprintf("Hello, %s!", args.GetString("name")))
+			return err
 		})
 
 	cancel := dispatcher.ListenMessages()
