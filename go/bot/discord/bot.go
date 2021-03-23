@@ -18,15 +18,21 @@ package discord
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
 
+type CommandListener func(user, channel, command string)
+
 // Bot represents a Discord bot
 type Bot interface {
 
+	// AddCommandListener registers a command listener to the bot
+	AddCommandListener(listener CommandListener) func()
+
 	// MessageCreate sends a message to the channel
-	MessageCreate(channel int64, message string) error
+	MessageCreate(channel, message string) error
 
 	// Close discord connecton
 	Close()
@@ -37,16 +43,34 @@ type bot struct {
 	session *discordgo.Session
 }
 
-func (b bot) MessageCreate(channel int64, message string) error {
-	return errors.New("not implmented")
+func (b bot) AddCommandListener(listener CommandListener) func() {
+	return b.session.AddHandler(func(session *discordgo.Session, message *discordgo.MessageCreate) {
+		if message.Author.ID == session.State.User.ID {
+			return
+		}
+
+		content := strings.TrimSpace(message.Content)
+		if len(content) == 0 {
+			return
+		}
+
+		if content[0] == '+' {
+			listener(message.Author.ID, message.ChannelID, content[1:])
+		}
+	})
+}
+
+func (b bot) MessageCreate(channel, message string) error {
+	_, err := b.session.ChannelMessageSend(channel, message)
+	return err
 }
 
 func (b *bot) Close() {
 	b.session.Close()
 }
 
-// Connect to a discord server
-func Connect(token string) (Bot, error) {
+// NewBot connects to a discord server as a bot
+func NewBot(token string) (Bot, error) {
 	if token == "" {
 		return nil, errors.New("invalid discord token")
 	}

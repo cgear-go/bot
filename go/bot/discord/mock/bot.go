@@ -8,6 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	discord "github.com/jonathanarnault/cgear-go/go/bot/discord"
 )
 
 // MockBot is a mock of Bot interface.
@@ -33,6 +34,20 @@ func (m *MockBot) EXPECT() *MockBotMockRecorder {
 	return m.recorder
 }
 
+// AddCommandListener mocks base method.
+func (m *MockBot) AddCommandListener(arg0 discord.CommandListener) func() {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddCommandListener", arg0)
+	ret0, _ := ret[0].(func())
+	return ret0
+}
+
+// AddCommandListener indicates an expected call of AddCommandListener.
+func (mr *MockBotMockRecorder) AddCommandListener(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCommandListener", reflect.TypeOf((*MockBot)(nil).AddCommandListener), arg0)
+}
+
 // Close mocks base method.
 func (m *MockBot) Close() {
 	m.ctrl.T.Helper()
@@ -46,7 +61,7 @@ func (mr *MockBotMockRecorder) Close() *gomock.Call {
 }
 
 // MessageCreate mocks base method.
-func (m *MockBot) MessageCreate(arg0 int64, arg1 string) error {
+func (m *MockBot) MessageCreate(arg0, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MessageCreate", arg0, arg1)
 	ret0, _ := ret[0].(error)
