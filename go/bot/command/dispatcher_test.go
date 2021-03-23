@@ -22,6 +22,8 @@ import (
 
 	"github.com/franela/goblin"
 	"github.com/golang/mock/gomock"
+
+	discordmock "github.com/jonathanarnault/cgear-go/go/bot/discord/mock"
 )
 
 func TestDispatcher__AddCommand(t *testing.T) {
@@ -55,43 +57,55 @@ func TestDispatcher__Execute(t *testing.T) {
 	g := goblin.Goblin(t)
 	g.Describe("dispatcher.AddCommand", func() {
 		g.It("Should execute the command with the given name", func() {
+			bot := discordmock.NewMockBot(ctrl)
 			command := NewMockCommand(ctrl)
-			dispatcher := &dispatcher{commands: map[string]Command{
-				"hello": command,
-			}}
+			dispatcher := &dispatcher{
+				commands: map[string]Command{
+					"hello": command,
+				},
+				bot: bot,
+			}
 
 			ctx := context.Background()
 			command.
 				EXPECT().
-				execute(gomock.Eq(ctx), gomock.Any()).
+				execute(gomock.Eq(ctx), gomock.Eq(bot), gomock.Any()).
 				Return(nil)
 			g.Assert(dispatcher.Execute(ctx, "hello")).IsNil()
 		})
 
 		g.It("Return an error if a parameter is not valid", func() {
+			bot := discordmock.NewMockBot(ctrl)
 			command := NewMockCommand(ctrl)
-			dispatcher := &dispatcher{commands: map[string]Command{
-				"hello": command,
-			}}
+			dispatcher := &dispatcher{
+				commands: map[string]Command{
+					"hello": command,
+				},
+				bot: bot,
+			}
 
 			ctx := context.Background()
 			command.
 				EXPECT().
-				execute(gomock.Eq(ctx), gomock.Any()).
+				execute(gomock.Eq(ctx), gomock.Eq(bot), gomock.Any()).
 				Return(io.EOF)
 			g.Assert(dispatcher.Execute(ctx, "hello")).Eql(io.EOF)
 		})
 
 		g.It("Return an error if execution fails", func() {
+			bot := discordmock.NewMockBot(ctrl)
 			command := NewMockCommand(ctrl)
-			dispatcher := &dispatcher{commands: map[string]Command{
-				"hello": command,
-			}}
+			dispatcher := &dispatcher{
+				commands: map[string]Command{
+					"hello": command,
+				},
+				bot: bot,
+			}
 
 			ctx := context.Background()
 			command.
 				EXPECT().
-				execute(gomock.Eq(ctx), gomock.Any()).
+				execute(gomock.Eq(ctx), gomock.Eq(bot), gomock.Any()).
 				Return(io.ErrClosedPipe)
 
 			g.Assert(dispatcher.Execute(ctx, "hello")).Eql(io.ErrClosedPipe)

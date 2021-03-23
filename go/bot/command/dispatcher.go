@@ -17,6 +17,8 @@ package command
 import (
 	"context"
 	"errors"
+
+	"github.com/jonathanarnault/cgear-go/go/bot/discord"
 )
 
 // Dispatcher represents a command dispatcher
@@ -33,6 +35,9 @@ type Dispatcher interface {
 
 // dispatcher is an implmentation of `Dispatcher`
 type dispatcher struct {
+
+	// bot holds the discord bot
+	bot discord.Bot
 
 	// commands holds the available commands
 	commands map[string]Command
@@ -68,10 +73,13 @@ func (d *dispatcher) Execute(ctx context.Context, command string) error {
 		return errors.New("unexiting command")
 	}
 
-	return cmd.execute(ctx, parser)
+	return cmd.execute(ctx, d.bot, parser)
 }
 
 // NewDispatcher creates a `Dispatcher`
-func NewDispatcher() Dispatcher {
-	return &dispatcher{commands: make(map[string]Command)}
+func NewDispatcher(bot discord.Bot) Dispatcher {
+	return &dispatcher{
+		bot:      bot,
+		commands: make(map[string]Command),
+	}
 }

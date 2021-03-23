@@ -184,7 +184,7 @@ func TestCommand__execute(t *testing.T) {
 				},
 			}
 
-			err := command.execute(context.Background(), parser)
+			err := command.execute(context.Background(), nil, parser)
 			g.Assert(err.Error()).Eql("1 - ImBagheera - Fontaine Pépinière")
 		})
 
@@ -203,7 +203,7 @@ func TestCommand__execute(t *testing.T) {
 				ReadInt().
 				Return(0, io.EOF)
 
-			g.Assert(command.execute(context.Background(), parser)).Eql(io.EOF)
+			g.Assert(command.execute(context.Background(), nil, parser)).Eql(io.EOF)
 		})
 
 		g.It("Should return an error if command fails", func() {
@@ -223,7 +223,7 @@ func TestCommand__execute(t *testing.T) {
 				ReadInt().
 				Return(1, nil)
 
-			g.Assert(command.execute(context.Background(), parser)).Eql(io.ErrUnexpectedEOF)
+			g.Assert(command.execute(context.Background(), nil, parser)).Eql(io.ErrUnexpectedEOF)
 		})
 	})
 }
