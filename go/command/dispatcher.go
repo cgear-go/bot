@@ -20,25 +20,36 @@ import "errors"
 type Dispatcher interface {
 
 	// AddCommand registers a command to the dispatcher
+	// Warning: this method is not supposed to be thread safe
 	AddCommand(name string) Command
 
 	// Execute a command
+	// This method is supposed to be thread safe
 	Execute(cmd string) error
 }
 
 // dispatcher is an implmentation of `Dispatcher`
 type dispatcher struct {
+
+	// commands holds the available commands
+	commands map[string]Command
 }
 
-func (d *dispatcher) AddCommand(string) Command {
-	return nil
+func (d *dispatcher) AddCommand(name string) Command {
+	if _, ok := d.commands[name]; !ok {
+		d.commands[name] = &command{
+			parameters: make([]parameter, 0, 8),
+			resolver:   nil,
+		}
+	}
+	return d.commands[name]
 }
 
 func (d *dispatcher) Execute(string) error {
-	return errors.New("Not Implemented")
+	return errors.New("not implemented")
 }
 
 // NewDispatcher creates a `Dispatcher`
-func NewDispatcher() Dispatcher {
-	return &dispatcher{}
+func NewDispatcher(parallelism int) Dispatcher {
+	return &dispatcher{commands: make(map[string]Command)}
 }
