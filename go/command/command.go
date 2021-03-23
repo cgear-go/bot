@@ -12,6 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
+//go:generate mockgen -destination command_mock_test.go -package command . Command
 package command
 
 import (
