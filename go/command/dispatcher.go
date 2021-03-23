@@ -14,7 +14,10 @@
 
 package command
 
-import "errors"
+import (
+	"context"
+	"errors"
+)
 
 // Dispatcher represents a command dispatcher
 type Dispatcher interface {
@@ -25,7 +28,7 @@ type Dispatcher interface {
 
 	// Execute a command
 	// This method is supposed to be thread safe
-	Execute(cmd string) error
+	Execute(ctx context.Context, command string) error
 }
 
 // dispatcher is an implmentation of `Dispatcher`
@@ -45,11 +48,30 @@ func (d *dispatcher) AddCommand(name string) Command {
 	return d.commands[name]
 }
 
-func (d *dispatcher) Execute(string) error {
-	return errors.New("not implemented")
+func (d *dispatcher) Execute(ctx context.Context, command string) error {
+	runes := []rune(command)
+	parser := &parser{
+		lexer: &lexer{
+			command: runes,
+			cursor:  0,
+			length:  len(runes),
+		},
+	}
+
+	name, err := parser.ReadString()
+	if err != nil {
+		return err
+	}
+
+	cmd, ok := d.commands[name]
+	if !ok {
+		return errors.New("unexiting command")
+	}
+
+	return cmd.execute(ctx, parser)
 }
 
 // NewDispatcher creates a `Dispatcher`
-func NewDispatcher(parallelism int) Dispatcher {
+func NewDispatcher() Dispatcher {
 	return &dispatcher{commands: make(map[string]Command)}
 }

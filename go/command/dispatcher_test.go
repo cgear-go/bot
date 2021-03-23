@@ -15,6 +15,9 @@
 package command
 
 import (
+	"context"
+	"errors"
+	"io"
 	"testing"
 
 	"github.com/franela/goblin"
@@ -48,14 +51,68 @@ func TestDispatcher__AddCommand(t *testing.T) {
 }
 
 func TestDispatcher__Execute(t *testing.T) {
+	ctrl := gomock.NewController(t)
 	g := goblin.Goblin(t)
 	g.Describe("dispatcher.AddCommand", func() {
-		g.It("Should execute the command with the given name")
+		g.It("Should execute the command with the given name", func() {
+			command := NewMockCommand(ctrl)
+			dispatcher := &dispatcher{commands: map[string]Command{
+				"hello": command,
+			}}
 
-		g.It("Return an error if a parameter is not valid")
+			ctx := context.Background()
+			command.
+				EXPECT().
+				execute(gomock.Eq(ctx), gomock.Any()).
+				Return(nil)
+			g.Assert(dispatcher.Execute(ctx, "hello")).IsNil()
+		})
 
-		g.It("Return an error if execution fails")
+		g.It("Return an error if a parameter is not valid", func() {
+			command := NewMockCommand(ctrl)
+			dispatcher := &dispatcher{commands: map[string]Command{
+				"hello": command,
+			}}
 
-		g.It("Return an error if command does not exist")
+			ctx := context.Background()
+			command.
+				EXPECT().
+				execute(gomock.Eq(ctx), gomock.Any()).
+				Return(io.EOF)
+			g.Assert(dispatcher.Execute(ctx, "hello")).Eql(io.EOF)
+		})
+
+		g.It("Return an error if execution fails", func() {
+			command := NewMockCommand(ctrl)
+			dispatcher := &dispatcher{commands: map[string]Command{
+				"hello": command,
+			}}
+
+			ctx := context.Background()
+			command.
+				EXPECT().
+				execute(gomock.Eq(ctx), gomock.Any()).
+				Return(io.ErrClosedPipe)
+
+			g.Assert(dispatcher.Execute(ctx, "hello")).Eql(io.ErrClosedPipe)
+		})
+
+		g.It("Return an error if no command is provided", func() {
+			command := NewMockCommand(ctrl)
+			dispatcher := &dispatcher{commands: map[string]Command{
+				"hello": command,
+			}}
+
+			g.Assert(dispatcher.Execute(context.Background(), "")).Eql(io.EOF)
+		})
+
+		g.It("Return an error if command does not exist", func() {
+			command := NewMockCommand(ctrl)
+			dispatcher := &dispatcher{commands: map[string]Command{
+				"hello": command,
+			}}
+
+			g.Assert(dispatcher.Execute(context.Background(), "name")).Eql(errors.New("unexiting command"))
+		})
 	})
 }
