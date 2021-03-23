@@ -12,6 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
+//go:generate mockgen -destination mock/bot.go -package discordmock . Bot
 package discord
 
 import (

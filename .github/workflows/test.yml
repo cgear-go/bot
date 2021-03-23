@@ -32,5 +32,5 @@ jobs:
         name: Setup Go
         with:
           go-version: ${{ matrix.go }}
-      - name: Go Tes
+      - name: Go Test
         run: go test ./go/...

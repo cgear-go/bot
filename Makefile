@@ -39,7 +39,7 @@ containers: test
 
 test:
 	@echo "Running tests..."
-	@$(GO) test ./...
+	@$(GO) test ./... | grep -v "no test files"
 
 test-deps:
 	@go install github.com/golang/mock/mockgen@v1.5.0
