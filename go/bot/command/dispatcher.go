@@ -31,6 +31,9 @@ type Dispatcher interface {
 	// Execute a command
 	// This method is supposed to be thread safe
 	Execute(ctx context.Context, command string) error
+
+	// ListenMessages creates a message listener on the bot
+	ListenMessages() func()
 }
 
 // dispatcher is an implmentation of `Dispatcher`
@@ -74,6 +77,16 @@ func (d *dispatcher) Execute(ctx context.Context, command string) error {
 	}
 
 	return cmd.execute(ctx, d.bot, parser)
+}
+
+func (d *dispatcher) ListenMessages() func() {
+	return d.bot.AddCommandListener(func(user, channel, command string) {
+		ctx := context.Background()
+
+		ctx = context.WithValue(ctx, discord.ContextUserId, user)
+		ctx = context.WithValue(ctx, discord.ContextChannelID, channel)
+		d.Execute(ctx, command)
+	})
 }
 
 // NewDispatcher creates a `Dispatcher`

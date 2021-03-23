@@ -22,7 +22,7 @@ import (
 )
 
 // CommandFn is the resolver function for a command
-type CommandFn func(context.Context, Arguments) error
+type CommandFn func(context.Context, discord.Bot, Arguments) error
 
 // Command allows to build commands
 type Command interface {
@@ -96,5 +96,5 @@ func (c command) execute(ctx context.Context, bot discord.Bot, parser Parser) er
 		arguments.values[parameter.name] = value
 	}
 
-	return c.resolver(ctx, arguments)
+	return c.resolver(ctx, bot, arguments)
 }

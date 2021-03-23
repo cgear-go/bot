@@ -22,6 +22,7 @@ import (
 
 	"github.com/franela/goblin"
 	"github.com/golang/mock/gomock"
+	"github.com/jonathanarnault/cgear-go/go/bot/discord"
 )
 
 func TestCommand__AddInt(t *testing.T) {
@@ -114,9 +115,9 @@ func TestCommand__AddResolver(t *testing.T) {
 				resolver:   nil,
 			}
 
-			resolver := func(context.Context, Arguments) error { return io.ErrUnexpectedEOF }
+			resolver := func(context.Context, discord.Bot, Arguments) error { return io.ErrUnexpectedEOF }
 			command.AddResolver(resolver)
-			g.Assert(command.resolver(nil, nil)).Eql(io.ErrUnexpectedEOF)
+			g.Assert(command.resolver(nil, nil, nil)).Eql(io.ErrUnexpectedEOF)
 		})
 	})
 }
@@ -130,7 +131,7 @@ func TestCommand(t *testing.T) {
 				resolver:   nil,
 			}
 
-			resolver := func(context.Context, Arguments) error { return io.ErrUnexpectedEOF }
+			resolver := func(context.Context, discord.Bot, Arguments) error { return io.ErrUnexpectedEOF }
 			command.
 				AddInt("count").
 				AddString("name").
@@ -144,7 +145,7 @@ func TestCommand(t *testing.T) {
 			g.Assert(command.parameters[1].tpe).Eql(parameterTypeString)
 			g.Assert(command.parameters[2].name).Eql("gym")
 			g.Assert(command.parameters[2].tpe).Eql(parameterTypeRest)
-			g.Assert(command.resolver(nil, nil)).Eql(io.ErrUnexpectedEOF)
+			g.Assert(command.resolver(nil, nil, nil)).Eql(io.ErrUnexpectedEOF)
 		})
 	})
 }
@@ -179,7 +180,7 @@ func TestCommand__execute(t *testing.T) {
 						tpe:  parameterTypeRest,
 					},
 				},
-				resolver: func(context.Context, Arguments) error {
+				resolver: func(context.Context, discord.Bot, Arguments) error {
 					return errors.New("1 - ImBagheera - Fontaine Pépinière")
 				},
 			}
@@ -214,7 +215,7 @@ func TestCommand__execute(t *testing.T) {
 						tpe:  parameterTypeInt,
 					},
 				},
-				resolver: func(context.Context, Arguments) error {
+				resolver: func(context.Context, discord.Bot, Arguments) error {
 					return io.ErrUnexpectedEOF
 				},
 			}
