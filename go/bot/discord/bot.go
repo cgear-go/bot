@@ -18,12 +18,13 @@ package discord
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-type CommandListener func(user, channel, command string)
+type CommandListener func(user, channel, message, command string) error
 
 // Bot represents a Discord bot
 type Bot interface {
@@ -32,7 +33,10 @@ type Bot interface {
 	AddCommandListener(listener CommandListener) func()
 
 	// MessageCreate sends a message to the channel
-	MessageCreate(channel, message string) error
+	MessageCreate(channel, message string) (string, error)
+
+	// MessageDelete deletes a message
+	MessageDelete(channel, message string) error
 
 	// Close discord connecton
 	Close()
@@ -43,7 +47,7 @@ type bot struct {
 	session *discordgo.Session
 }
 
-func (b bot) AddCommandListener(listener CommandListener) func() {
+func (b *bot) AddCommandListener(listener CommandListener) func() {
 	return b.session.AddHandler(func(session *discordgo.Session, message *discordgo.MessageCreate) {
 		if message.Author.ID == session.State.User.ID {
 			return
@@ -54,15 +58,28 @@ func (b bot) AddCommandListener(listener CommandListener) func() {
 			return
 		}
 
-		if content[0] == '+' {
-			listener(message.Author.ID, message.ChannelID, content[1:])
+		if content[0] != '+' {
+			return
 		}
+		err := listener(message.Author.ID, message.ChannelID, message.ID, content[1:])
+		if err != nil {
+			log.Printf("Failed to execute command (%s): %v", content, err)
+		}
+
+		session.ChannelMessageDelete(message.ChannelID, message.ID)
 	})
 }
 
-func (b bot) MessageCreate(channel, message string) error {
-	_, err := b.session.ChannelMessageSend(channel, message)
-	return err
+func (b *bot) MessageCreate(channel, message string) (string, error) {
+	msg, err := b.session.ChannelMessageSend(channel, message)
+	if err != nil {
+		return "", err
+	}
+	return msg.ID, nil
+}
+
+func (b *bot) MessageDelete(channel, message string) error {
+	return b.session.ChannelMessageDelete(channel, message)
 }
 
 func (b *bot) Close() {

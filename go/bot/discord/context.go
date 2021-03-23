@@ -22,4 +22,7 @@ const (
 
 	// ContextChannelID is the context key for channel ID
 	ContextChannelID ContextKey = "channel"
+
+	// ContextMessageID is the context key for message ID
+	ContextMessageID ContextKey = "message"
 )
