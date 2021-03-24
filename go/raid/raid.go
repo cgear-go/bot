@@ -14,6 +14,18 @@
 
 package raid
 
+import "time"
+
 type Raid struct {
+	// ID corresponds to the raid ID
 	ID string
+
+	// Gym holds the gym name
+	Gym string
+
+	// Users corresponds to the users doing the raid
+	Users []string
+
+	// Start holds the raid launch time
+	Start time.Time
 }

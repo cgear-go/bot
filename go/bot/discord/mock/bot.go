@@ -50,18 +50,18 @@ func (mr *MockBotMockRecorder) AddCommandListener(arg0 interface{}) *gomock.Call
 }
 
 // ChannelCreateWithPermissions mocks base method.
-func (m *MockBot) ChannelCreateWithPermissions(arg0, arg1 string, arg2 []*discordgo.PermissionOverwrite) (string, error) {
+func (m *MockBot) ChannelCreateWithPermissions(arg0, arg1, arg2 string, arg3 []*discordgo.PermissionOverwrite) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelCreateWithPermissions", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ChannelCreateWithPermissions", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ChannelCreateWithPermissions indicates an expected call of ChannelCreateWithPermissions.
-func (mr *MockBotMockRecorder) ChannelCreateWithPermissions(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockBotMockRecorder) ChannelCreateWithPermissions(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelCreateWithPermissions", reflect.TypeOf((*MockBot)(nil).ChannelCreateWithPermissions), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelCreateWithPermissions", reflect.TypeOf((*MockBot)(nil).ChannelCreateWithPermissions), arg0, arg1, arg2, arg3)
 }
 
 // Close mocks base method.

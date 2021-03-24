@@ -24,7 +24,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-type CommandListener func(user, channel, message, command string) error
+type CommandListener func(user, guild, channel, message, command string) error
 
 // Bot represents a Discord bot
 type Bot interface {
@@ -33,7 +33,7 @@ type Bot interface {
 	AddCommandListener(listener CommandListener) func()
 
 	// ChannelCreateWithPermissions creates a channel in the given guild with the given permissions
-	ChannelCreateWithPermissions(guild, name string, rpermissions []*discordgo.PermissionOverwrite) (string, error)
+	ChannelCreateWithPermissions(guild, category, name string, rpermissions []*discordgo.PermissionOverwrite) (string, error)
 
 	// MessageCreate sends a message to the channel
 	MessageCreate(channel, message string) (string, error)
@@ -64,7 +64,7 @@ func (b *bot) AddCommandListener(listener CommandListener) func() {
 		if content[0] != '+' {
 			return
 		}
-		err := listener(message.Author.ID, message.ChannelID, message.ID, content[1:])
+		err := listener(message.Author.ID, message.GuildID, message.ChannelID, message.ID, content[1:])
 		if err != nil {
 			log.Printf("Failed to execute command (%s): %v", content, err)
 		}
@@ -73,10 +73,11 @@ func (b *bot) AddCommandListener(listener CommandListener) func() {
 	})
 }
 
-func (b *bot) ChannelCreateWithPermissions(guild, name string, permissions []*discordgo.PermissionOverwrite) (string, error) {
+func (b *bot) ChannelCreateWithPermissions(guild, category, name string, permissions []*discordgo.PermissionOverwrite) (string, error) {
 	channel, err := b.session.GuildChannelCreateComplex(guild, discordgo.GuildChannelCreateData{
 		Name:                 name,
 		PermissionOverwrites: permissions,
+		ParentID:             category,
 	})
 	if err != nil {
 		return "", err
