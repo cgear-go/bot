@@ -16,3 +16,4 @@ vendor/
 
 # Binary
 /bot
+.makerc

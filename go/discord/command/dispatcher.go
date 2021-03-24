@@ -35,8 +35,9 @@ type Dispatcher interface {
 	// This method is supposed to be thread safe
 	Execute(ctx context.Context, command string) error
 
-	// ListenMessages creates a message listener on the bot
-	ListenMessages() func()
+	// ListenMessages creates a message listener on the bot, automatically cleaning messages that are not commands in the given
+	// channels
+	ListenMessages(channels ...string) func()
 }
 
 // dispatcher is an implmentation of `Dispatcher`
@@ -82,7 +83,7 @@ func (d *dispatcher) Execute(ctx context.Context, command string) error {
 	return cmd.execute(ctx, d.session, parser)
 }
 
-func (d *dispatcher) ListenMessages() func() {
+func (d *dispatcher) ListenMessages(channels ...string) func() {
 	return d.session.AddHandler(func(session *discordgo.Session, message *discordgo.MessageCreate) {
 		if message.Author.ID == session.State.User.ID {
 			return
@@ -94,14 +95,16 @@ func (d *dispatcher) ListenMessages() func() {
 		}
 
 		if content[0] != '+' {
+			for _, channel := range channels {
+				if channel == message.ChannelID {
+					session.ChannelMessageDelete(message.ChannelID, message.ID)
+				}
+			}
 			return
 		}
-		ctx := context.Background()
-		ctx = context.WithValue(ctx, discord.ContextUserId, message.Author.ID)
-		ctx = context.WithValue(ctx, discord.ContextGuildID, message.GuildID)
-		ctx = context.WithValue(ctx, discord.ContextChannelID, message.ChannelID)
-		ctx = context.WithValue(ctx, discord.ContextMessageID, message.ID)
 
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, discord.ContextMessageKey, message)
 		err := d.Execute(ctx, content[1:])
 		if err != nil {
 			log.Printf("Failed to execute command (%s): %v", content, err)

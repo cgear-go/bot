@@ -17,15 +17,6 @@ package discord
 type ContextKey string
 
 const (
-	// ContextUserId is the context key for user ID
-	ContextUserId ContextKey = "user"
-
-	// ContextGuildID is the context key for guild ID
-	ContextGuildID ContextKey = "guild"
-
-	// ContextChannelID is the context key for channel ID
-	ContextChannelID ContextKey = "channel"
-
-	// ContextMessageID is the context key for message ID
-	ContextMessageID ContextKey = "message"
+	// ContextMessageKey is the context key for message
+	ContextMessageKey ContextKey = "message"
 )
