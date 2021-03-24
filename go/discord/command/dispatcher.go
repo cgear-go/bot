@@ -18,7 +18,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/jonathanarnault/cgear-go/go/bot/discord"
+	"github.com/jonathanarnault/cgear-go/go/discord"
 )
 
 // Dispatcher represents a command dispatcher

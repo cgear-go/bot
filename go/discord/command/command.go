@@ -18,7 +18,7 @@ package command
 import (
 	"context"
 
-	"github.com/jonathanarnault/cgear-go/go/bot/discord"
+	"github.com/jonathanarnault/cgear-go/go/discord"
 )
 
 // CommandFn is the resolver function for a command
