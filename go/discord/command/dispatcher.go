@@ -17,7 +17,10 @@ package command
 import (
 	"context"
 	"errors"
+	"log"
+	"strings"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/jonathanarnault/cgear-go/go/discord"
 )
 
@@ -39,8 +42,8 @@ type Dispatcher interface {
 // dispatcher is an implmentation of `Dispatcher`
 type dispatcher struct {
 
-	// bot holds the discord bot
-	bot discord.Bot
+	// session holds the discord session
+	session *discordgo.Session
 
 	// commands holds the available commands
 	commands map[string]Command
@@ -76,26 +79,42 @@ func (d *dispatcher) Execute(ctx context.Context, command string) error {
 		return errors.New("unexiting command")
 	}
 
-	return cmd.execute(ctx, d.bot, parser)
+	return cmd.execute(ctx, d.session, parser)
 }
 
 func (d *dispatcher) ListenMessages() func() {
-	return d.bot.AddCommandListener(func(user, guild, channel, message, command string) error {
+	return d.session.AddHandler(func(session *discordgo.Session, message *discordgo.MessageCreate) {
+		if message.Author.ID == session.State.User.ID {
+			return
+		}
+
+		content := strings.TrimSpace(message.Content)
+		if len(content) == 0 {
+			return
+		}
+
+		if content[0] != '+' {
+			return
+		}
 		ctx := context.Background()
+		ctx = context.WithValue(ctx, discord.ContextUserId, message.Author.ID)
+		ctx = context.WithValue(ctx, discord.ContextGuildID, message.GuildID)
+		ctx = context.WithValue(ctx, discord.ContextChannelID, message.ChannelID)
+		ctx = context.WithValue(ctx, discord.ContextMessageID, message.ID)
 
-		ctx = context.WithValue(ctx, discord.ContextUserId, user)
-		ctx = context.WithValue(ctx, discord.ContextGuildID, guild)
-		ctx = context.WithValue(ctx, discord.ContextChannelID, channel)
-		ctx = context.WithValue(ctx, discord.ContextMessageID, message)
+		err := d.Execute(ctx, content[1:])
+		if err != nil {
+			log.Printf("Failed to execute command (%s): %v", content, err)
+		}
 
-		return d.Execute(ctx, command)
+		session.ChannelMessageDelete(message.ChannelID, message.ID)
 	})
 }
 
 // NewDispatcher creates a `Dispatcher`
-func NewDispatcher(bot discord.Bot) Dispatcher {
+func NewDispatcher(session *discordgo.Session) Dispatcher {
 	return &dispatcher{
-		bot:      bot,
+		session:  session,
 		commands: make(map[string]Command),
 	}
 }

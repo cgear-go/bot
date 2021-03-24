@@ -30,17 +30,17 @@ import (
 )
 
 func main() {
-	bot, err := discord.NewBot(os.Getenv("DISCORD_TOKEN"))
+	session, err := discord.NewBot(os.Getenv("DISCORD_TOKEN"))
 	if err != nil {
 		log.Fatalf("Failed to start Discord bot: %v", err)
 	}
-	defer bot.Close()
+	defer session.Close()
 
-	dispatcher := command.NewDispatcher(bot)
+	dispatcher := command.NewDispatcher(session)
 	dispatcher.AddCommand("hello").
 		AddString("name").
-		AddResolver(func(ctx context.Context, bot discord.Bot, args command.Arguments) error {
-			_, err := bot.MessageCreate(
+		AddResolver(func(ctx context.Context, bot *discordgo.Session, args command.Arguments) error {
+			_, err := bot.ChannelMessageSend(
 				ctx.Value(discord.ContextChannelID).(string),
 				fmt.Sprintf("Hello, %s!", args.GetString("name")))
 			return err
@@ -49,7 +49,7 @@ func main() {
 		AddInt("invites").
 		AddString("time").
 		AddRest("gym").
-		AddResolver(func(ctx context.Context, bot discord.Bot, args command.Arguments) error {
+		AddResolver(func(ctx context.Context, bot *discordgo.Session, args command.Arguments) error {
 			var hours, minutes int
 			_, err := fmt.Sscanf(args.GetString("time"), "%dh%d", &hours, &minutes)
 			if err != nil {
@@ -59,20 +59,23 @@ func main() {
 			now := time.Now()
 			start := time.Date(now.Year(), now.Month(), now.Day(), hours, minutes, 0, 0, time.Local)
 
-			channel, err := bot.ChannelCreateWithPermissions(
+			channel, err := bot.GuildChannelCreateComplex(
 				ctx.Value(discord.ContextGuildID).(string),
-				os.Getenv("CATEGORY_ID"),
-				fmt.Sprintf("raid-%s", start.Format("02-01-15h04")),
-				[]*discordgo.PermissionOverwrite{})
+				discordgo.GuildChannelCreateData{
+					Name:                 fmt.Sprintf("raid-%s", start.Format("02-01-15h04")),
+					ParentID:             os.Getenv("CATEGORY_ID"),
+					PermissionOverwrites: []*discordgo.PermissionOverwrite{},
+				})
 			if err != nil {
 				return err
 			}
 
 			log.Printf("Creating raid: %v", raid.Raid{
-				ID:    channel,
-				Gym:   args.GetString("gym"),
-				Users: []string{},
-				Start: start,
+				Channel:  channel,
+				Gym:      args.GetString("gym"),
+				Operator: ctx.Value(discord.ContextUserId).(string),
+				Invited:  []string{},
+				Start:    start,
 			})
 			return nil
 		})

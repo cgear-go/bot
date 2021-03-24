@@ -18,91 +18,12 @@ package discord
 import (
 	"errors"
 	"fmt"
-	"log"
-	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-type CommandListener func(user, guild, channel, message, command string) error
-
-// Bot represents a Discord bot
-type Bot interface {
-
-	// AddCommandListener registers a command listener to the bot
-	AddCommandListener(listener CommandListener) func()
-
-	// ChannelCreateWithPermissions creates a channel in the given guild with the given permissions
-	ChannelCreateWithPermissions(guild, category, name string, rpermissions []*discordgo.PermissionOverwrite) (string, error)
-
-	// MessageCreate sends a message to the channel
-	MessageCreate(channel, message string) (string, error)
-
-	// MessageDelete deletes a message
-	MessageDelete(channel, message string) error
-
-	// Close discord connecton
-	Close()
-}
-
-// bot is an implementation of `Bot`
-type bot struct {
-	session *discordgo.Session
-}
-
-func (b *bot) AddCommandListener(listener CommandListener) func() {
-	return b.session.AddHandler(func(session *discordgo.Session, message *discordgo.MessageCreate) {
-		if message.Author.ID == session.State.User.ID {
-			return
-		}
-
-		content := strings.TrimSpace(message.Content)
-		if len(content) == 0 {
-			return
-		}
-
-		if content[0] != '+' {
-			return
-		}
-		err := listener(message.Author.ID, message.GuildID, message.ChannelID, message.ID, content[1:])
-		if err != nil {
-			log.Printf("Failed to execute command (%s): %v", content, err)
-		}
-
-		session.ChannelMessageDelete(message.ChannelID, message.ID)
-	})
-}
-
-func (b *bot) ChannelCreateWithPermissions(guild, category, name string, permissions []*discordgo.PermissionOverwrite) (string, error) {
-	channel, err := b.session.GuildChannelCreateComplex(guild, discordgo.GuildChannelCreateData{
-		Name:                 name,
-		PermissionOverwrites: permissions,
-		ParentID:             category,
-	})
-	if err != nil {
-		return "", err
-	}
-	return channel.ID, nil
-}
-
-func (b *bot) MessageCreate(channel, message string) (string, error) {
-	msg, err := b.session.ChannelMessageSend(channel, message)
-	if err != nil {
-		return "", err
-	}
-	return msg.ID, nil
-}
-
-func (b *bot) MessageDelete(channel, message string) error {
-	return b.session.ChannelMessageDelete(channel, message)
-}
-
-func (b *bot) Close() {
-	b.session.Close()
-}
-
 // NewBot connects to a discord server as a bot
-func NewBot(token string) (Bot, error) {
+func NewBot(token string) (*discordgo.Session, error) {
 	if token == "" {
 		return nil, errors.New("invalid discord token")
 	}
@@ -116,7 +37,5 @@ func NewBot(token string) (Bot, error) {
 		return nil, fmt.Errorf("failed to open Discord connection: %v", err)
 	}
 
-	return &bot{
-		session: connection,
-	}, nil
+	return connection, nil
 }
