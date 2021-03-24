@@ -32,6 +32,9 @@ type Bot interface {
 	// AddCommandListener registers a command listener to the bot
 	AddCommandListener(listener CommandListener) func()
 
+	// ChannelCreateWithPermissions creates a channel in the given guild with the given permissions
+	ChannelCreateWithPermissions(guild, name string, rpermissions []*discordgo.PermissionOverwrite) (string, error)
+
 	// MessageCreate sends a message to the channel
 	MessageCreate(channel, message string) (string, error)
 
@@ -68,6 +71,17 @@ func (b *bot) AddCommandListener(listener CommandListener) func() {
 
 		session.ChannelMessageDelete(message.ChannelID, message.ID)
 	})
+}
+
+func (b *bot) ChannelCreateWithPermissions(guild, name string, permissions []*discordgo.PermissionOverwrite) (string, error) {
+	channel, err := b.session.GuildChannelCreateComplex(guild, discordgo.GuildChannelCreateData{
+		Name:                 name,
+		PermissionOverwrites: permissions,
+	})
+	if err != nil {
+		return "", err
+	}
+	return channel.ID, nil
 }
 
 func (b *bot) MessageCreate(channel, message string) (string, error) {
