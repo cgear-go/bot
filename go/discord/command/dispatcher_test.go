@@ -23,7 +23,7 @@ import (
 	"github.com/franela/goblin"
 	"github.com/golang/mock/gomock"
 
-	discordmock "github.com/jonathanarnault/cgear-go/go/bot/discord/mock"
+	discordmock "github.com/jonathanarnault/cgear-go/go/discord/mock"
 )
 
 func TestDispatcher__AddCommand(t *testing.T) {

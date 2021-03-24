@@ -22,7 +22,7 @@ import (
 
 	"github.com/franela/goblin"
 	"github.com/golang/mock/gomock"
-	"github.com/jonathanarnault/cgear-go/go/bot/discord"
+	"github.com/jonathanarnault/cgear-go/go/discord"
 )
 
 func TestCommand__AddInt(t *testing.T) {

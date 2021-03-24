@@ -24,9 +24,9 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/jonathanarnault/cgear-go/go/bot/command"
-	"github.com/jonathanarnault/cgear-go/go/bot/discord"
-	"github.com/jonathanarnault/cgear-go/go/raid"
+	"github.com/jonathanarnault/cgear-go/go/bot/raid"
+	"github.com/jonathanarnault/cgear-go/go/discord"
+	"github.com/jonathanarnault/cgear-go/go/discord/command"
 )
 
 func main() {
