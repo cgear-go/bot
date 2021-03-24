@@ -21,9 +21,12 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/jonathanarnault/cgear-go/go/bot/command"
 	"github.com/jonathanarnault/cgear-go/go/bot/discord"
+	"github.com/jonathanarnault/cgear-go/go/raid"
 )
 
 func main() {
@@ -41,6 +44,37 @@ func main() {
 				ctx.Value(discord.ContextChannelID).(string),
 				fmt.Sprintf("Hello, %s!", args.GetString("name")))
 			return err
+		})
+	dispatcher.AddCommand("raid").
+		AddInt("invites").
+		AddString("time").
+		AddRest("gym").
+		AddResolver(func(ctx context.Context, bot discord.Bot, args command.Arguments) error {
+			var hours, minutes int
+			_, err := fmt.Sscanf(args.GetString("time"), "%dh%d", &hours, &minutes)
+			if err != nil {
+				return err
+			}
+
+			now := time.Now()
+			start := time.Date(now.Year(), now.Month(), now.Day(), hours, minutes, 0, 0, time.Local)
+
+			channel, err := bot.ChannelCreateWithPermissions(
+				ctx.Value(discord.ContextGuildID).(string),
+				os.Getenv("CATEGORY_ID"),
+				fmt.Sprintf("raid-%s", start.Format("02-01-15h04")),
+				[]*discordgo.PermissionOverwrite{})
+			if err != nil {
+				return err
+			}
+
+			log.Printf("Creating raid: %v", raid.Raid{
+				ID:    channel,
+				Gym:   args.GetString("gym"),
+				Users: []string{},
+				Start: start,
+			})
+			return nil
 		})
 
 	cancel := dispatcher.ListenMessages()

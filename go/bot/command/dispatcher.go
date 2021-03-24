@@ -80,10 +80,11 @@ func (d *dispatcher) Execute(ctx context.Context, command string) error {
 }
 
 func (d *dispatcher) ListenMessages() func() {
-	return d.bot.AddCommandListener(func(user, channel, message, command string) error {
+	return d.bot.AddCommandListener(func(user, guild, channel, message, command string) error {
 		ctx := context.Background()
 
 		ctx = context.WithValue(ctx, discord.ContextUserId, user)
+		ctx = context.WithValue(ctx, discord.ContextGuildID, guild)
 		ctx = context.WithValue(ctx, discord.ContextChannelID, channel)
 		ctx = context.WithValue(ctx, discord.ContextMessageID, message)
 

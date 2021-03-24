@@ -20,6 +20,9 @@ const (
 	// ContextUserId is the context key for user ID
 	ContextUserId ContextKey = "user"
 
+	// ContextGuildID is the context key for guild ID
+	ContextGuildID ContextKey = "guild"
+
 	// ContextChannelID is the context key for channel ID
 	ContextChannelID ContextKey = "channel"
 
