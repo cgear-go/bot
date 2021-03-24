@@ -8,8 +8,8 @@ import (
 	context "context"
 	reflect "reflect"
 
+	discordgo "github.com/bwmarrin/discordgo"
 	gomock "github.com/golang/mock/gomock"
-	discord "github.com/jonathanarnault/cgear-go/go/discord"
 )
 
 // MockCommand is a mock of Command interface.
@@ -90,7 +90,7 @@ func (mr *MockCommandMockRecorder) AddString(arg0 interface{}) *gomock.Call {
 }
 
 // execute mocks base method.
-func (m *MockCommand) execute(arg0 context.Context, arg1 discord.Bot, arg2 Parser) error {
+func (m *MockCommand) execute(arg0 context.Context, arg1 *discordgo.Session, arg2 Parser) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "execute", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)

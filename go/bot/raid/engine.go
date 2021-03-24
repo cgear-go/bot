@@ -31,7 +31,7 @@ type engine struct {
 }
 
 func (e *engine) SubmitRaid(_ context.Context, raid Raid) {
-	e.raids[raid.ID] = raid
+	e.raids[raid.Channel.ID] = raid
 }
 
 // NewEngine creates a new raid engine

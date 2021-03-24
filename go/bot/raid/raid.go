@@ -14,17 +14,24 @@
 
 package raid
 
-import "time"
+import (
+	"time"
+
+	"github.com/bwmarrin/discordgo"
+)
 
 type Raid struct {
-	// ID corresponds to the raid ID
-	ID string
+	// Channel corresponds to the raid channel
+	Channel *discordgo.Channel
 
 	// Gym holds the gym name
 	Gym string
 
-	// Users corresponds to the users doing the raid
-	Users []string
+	// Operator corresponds to the raid operator
+	Operator string
+
+	// Invited corresponds to the users invited to the raid
+	Invited []string
 
 	// Start holds the raid launch time
 	Start time.Time

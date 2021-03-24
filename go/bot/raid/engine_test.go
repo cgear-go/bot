@@ -18,6 +18,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/franela/goblin"
 )
 
@@ -26,7 +27,9 @@ func TestRaid__SubmitRaid(t *testing.T) {
 	g.Describe("raid.SubmitRaid", func() {
 		g.It("Should append raid to the raids map", func() {
 			raid := Raid{
-				ID: "1234",
+				Channel: &discordgo.Channel{
+					ID: "1234",
+				},
 			}
 			engine := &engine{
 				raids: make(map[string]Raid),
