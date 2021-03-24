@@ -71,6 +71,9 @@ func (l *lexer) Next() (string, error) {
 	}
 
 	if sb.Len() == 0 {
+		if l.HasNext() {
+			return l.Next()
+		}
 		return "", io.EOF
 	}
 	return sb.String(), nil

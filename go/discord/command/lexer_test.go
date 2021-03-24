@@ -70,9 +70,9 @@ func TestLexer__Next(t *testing.T) {
 	g.Describe("lexer.Next", func() {
 		g.It("Should return the next token", func() {
 			lexer := &lexer{
-				command: []rune{'&', 'é', '§', '^', 'c', '+', ' ', 'a', 'b', 'c', '\n', '😃'},
+				command: []rune{'&', 'é', '§', '^', 'c', '+', ' ', 'a', 'b', 'c', ' ', ' ', '\n', '😃'},
 				cursor:  0,
-				length:  12,
+				length:  14,
 			}
 
 			{
