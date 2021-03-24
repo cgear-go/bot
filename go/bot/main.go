@@ -37,53 +37,58 @@ func main() {
 	defer session.Close()
 
 	dispatcher := command.NewDispatcher(session)
-	dispatcher.AddCommand("hello").
-		AddString("name").
-		AddResolver(func(ctx context.Context, bot *discordgo.Session, args command.Arguments) error {
-			_, err := bot.ChannelMessageSend(
-				ctx.Value(discord.ContextChannelID).(string),
-				fmt.Sprintf("Hello, %s!", args.GetString("name")))
-			return err
-		})
+	engine := raid.NewEngine(session)
+
+	raidChannelId := os.Getenv("RAID_CHANNEL_ID")
 	dispatcher.AddCommand("raid").
-		AddInt("invites").
+		AddString("level").
 		AddString("time").
+		AddInt("invites").
 		AddRest("gym").
 		AddResolver(func(ctx context.Context, bot *discordgo.Session, args command.Arguments) error {
+			command := ctx.Value(discord.ContextMessageKey).(*discordgo.MessageCreate)
+
+			if command.ChannelID != raidChannelId {
+				log.Printf("Skipping command (%s != %s)", command.ChannelID, raidChannelId)
+				return nil
+			}
+
+			startTime := args.GetString("time")
+
 			var hours, minutes int
-			_, err := fmt.Sscanf(args.GetString("time"), "%dh%d", &hours, &minutes)
+			_, err := fmt.Sscanf(startTime, "%dh%d", &hours, &minutes)
 			if err != nil {
 				return err
 			}
 
 			now := time.Now()
-			start := time.Date(now.Year(), now.Month(), now.Day(), hours, minutes, 0, 0, time.Local)
 
-			channel, err := bot.GuildChannelCreateComplex(
-				ctx.Value(discord.ContextGuildID).(string),
-				discordgo.GuildChannelCreateData{
-					Name:                 fmt.Sprintf("raid-%s", start.Format("02-01-15h04")),
-					ParentID:             os.Getenv("CATEGORY_ID"),
-					PermissionOverwrites: []*discordgo.PermissionOverwrite{},
-				})
+			raid := raid.Raid{
+				Level:     args.GetString("level"),
+				Gym:       args.GetString("gym"),
+				Operator:  command.Author,
+				Invites:   args.GetInt("invites"),
+				Attendees: make([]*discordgo.User, 0),
+				Start:     time.Date(now.Year(), now.Month(), now.Day(), hours, minutes, 0, 0, time.Local),
+			}
+
+			id, err := engine.SubmitRaid(ctx, raid)
 			if err != nil {
 				return err
 			}
 
-			log.Printf("Creating raid: %v", raid.Raid{
-				Channel:  channel,
-				Gym:      args.GetString("gym"),
-				Operator: ctx.Value(discord.ContextUserId).(string),
-				Invited:  []string{},
-				Start:    start,
-			})
+			go func() {
+				time.Sleep(5 * time.Second)
+				engine.EndRaid(ctx, id)
+			}()
+
 			return nil
 		})
 
-	cancel := dispatcher.ListenMessages()
+	cancelCommandListener := dispatcher.ListenMessages(raidChannelId)
 	fmt.Println("CGear Bot connected to Discord, press Ctrl + C to exit")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
-	cancel()
+	cancelCommandListener()
 }

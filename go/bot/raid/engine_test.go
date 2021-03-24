@@ -27,7 +27,7 @@ func TestRaid__SubmitRaid(t *testing.T) {
 	g.Describe("raid.SubmitRaid", func() {
 		g.It("Should append raid to the raids map", func() {
 			raid := Raid{
-				Channel: &discordgo.Channel{
+				Message: &discordgo.Message{
 					ID: "1234",
 				},
 			}
