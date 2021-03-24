@@ -7,6 +7,7 @@ package discordmock
 import (
 	reflect "reflect"
 
+	discordgo "github.com/bwmarrin/discordgo"
 	gomock "github.com/golang/mock/gomock"
 	discord "github.com/jonathanarnault/cgear-go/go/bot/discord"
 )
@@ -46,6 +47,21 @@ func (m *MockBot) AddCommandListener(arg0 discord.CommandListener) func() {
 func (mr *MockBotMockRecorder) AddCommandListener(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddCommandListener", reflect.TypeOf((*MockBot)(nil).AddCommandListener), arg0)
+}
+
+// ChannelCreateWithPermissions mocks base method.
+func (m *MockBot) ChannelCreateWithPermissions(arg0, arg1 string, arg2 []*discordgo.PermissionOverwrite) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelCreateWithPermissions", arg0, arg1, arg2)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChannelCreateWithPermissions indicates an expected call of ChannelCreateWithPermissions.
+func (mr *MockBotMockRecorder) ChannelCreateWithPermissions(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelCreateWithPermissions", reflect.TypeOf((*MockBot)(nil).ChannelCreateWithPermissions), arg0, arg1, arg2)
 }
 
 // Close mocks base method.
