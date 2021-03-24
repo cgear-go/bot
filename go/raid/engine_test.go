@@ -14,29 +14,26 @@
 
 package raid
 
-import "context"
+import (
+	"context"
+	"testing"
 
-// Engine represents the raid engine
-type Engine interface {
+	"github.com/franela/goblin"
+)
 
-	// SubmitRaid submits a raid with the given users
-	SubmitRaid(context.Context, Raid)
-}
+func TestRaid__SubmitRaid(t *testing.T) {
+	g := goblin.Goblin(t)
+	g.Describe("raid.SubmitRaid", func() {
+		g.It("Should append raid to the raids map", func() {
+			raid := Raid{
+				ID: "1234",
+			}
+			engine := &engine{
+				raids: make(map[string]Raid),
+			}
 
-// engine is and implmentation of `Engine`
-type engine struct {
-
-	// raids holds the raids that are ongoing
-	raids map[string]Raid
-}
-
-func (e *engine) SubmitRaid(_ context.Context, raid Raid) {
-	e.raids[raid.ID] = raid
-}
-
-// NewEngine creates a new raid engine
-func NewEngine() Engine {
-	return &engine{
-		raids: make(map[string]Raid),
-	}
+			engine.SubmitRaid(context.Background(), raid)
+			g.Assert(engine.raids["1234"]).Eql(raid)
+		})
+	})
 }

@@ -14,29 +14,6 @@
 
 package raid
 
-import "context"
-
-// Engine represents the raid engine
-type Engine interface {
-
-	// SubmitRaid submits a raid with the given users
-	SubmitRaid(context.Context, Raid)
-}
-
-// engine is and implmentation of `Engine`
-type engine struct {
-
-	// raids holds the raids that are ongoing
-	raids map[string]Raid
-}
-
-func (e *engine) SubmitRaid(_ context.Context, raid Raid) {
-	e.raids[raid.ID] = raid
-}
-
-// NewEngine creates a new raid engine
-func NewEngine() Engine {
-	return &engine{
-		raids: make(map[string]Raid),
-	}
+type Raid struct {
+	ID string
 }
