@@ -72,16 +72,18 @@ func main() {
 				Start:     time.Date(now.Year(), now.Month(), now.Day(), hours, minutes, 0, 0, time.Local),
 			}
 
-			id, err := engine.SubmitRaid(ctx, raid)
+			if _, err := engine.SubmitRaid(ctx, raid); err != nil {
+				return err
+			}
+			return nil
+		})
+
+	dispatcher.AddCommand("fin").
+		AddResolver(func(ctx context.Context, bot *discordgo.Session, args command.Arguments) error {
+			err := engine.EndRaid(ctx)
 			if err != nil {
 				return err
 			}
-
-			go func() {
-				time.Sleep(60 * time.Second)
-				engine.EndRaid(ctx, id)
-			}()
-
 			return nil
 		})
 
