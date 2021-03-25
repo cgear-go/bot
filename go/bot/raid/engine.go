@@ -62,15 +62,7 @@ func (e *engine) SubmitRaid(ctx context.Context, raid Raid) (string, error) {
 		return "", err
 	}
 
-	message, err := e.session.ChannelMessageSend(
-		command.ChannelID,
-		fmt.Sprintf(
-			`%s
-
-Pour participer au raid :
-🙏 pour demander une invitation à distance ;
-👍 pour participer.`,
-			raid.String()))
+	message, err := e.session.ChannelMessageSend(command.ChannelID, raid.Announcement())
 	if err != nil {
 		return "", err
 	}
@@ -80,6 +72,19 @@ Pour participer au raid :
 	}
 
 	if err := e.session.MessageReactionAdd(message.ChannelID, message.ID, "👍"); err != nil {
+		return "", err
+	}
+
+	if err := e.session.ChannelPermissionSet(
+		channel.ID, command.Author.ID, discordgo.PermissionOverwriteTypeMember,
+		discordgo.PermissionViewChannel, 0); err != nil {
+
+		return "", err
+	}
+
+	if _, err := e.session.ChannelMessageSend(channel.ID,
+		fmt.Sprintf("Raid organisé par %s, code ami:", command.Author.Mention())); err != nil {
+
 		return "", err
 	}
 

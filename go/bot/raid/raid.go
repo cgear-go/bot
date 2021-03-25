@@ -57,3 +57,16 @@ func (r Raid) String() string {
 		r.Operator.Mention(),
 		r.Gym)
 }
+
+func (r Raid) Announcement() string {
+	return fmt.Sprintf(
+		`%s
+
+Pour participer au raid :
+🙏 pour demander une invitation à distance ;
+👍 pour participer sans invitation.
+
+%d invitations à distance disponibles.`,
+		r.String(),
+		r.Invites)
+}
