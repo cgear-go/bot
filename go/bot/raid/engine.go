@@ -35,7 +35,7 @@ type Engine interface {
 	SubmitRaid(context.Context, Raid) (string, error)
 
 	// EndRaid clears raid resources
-	EndRaid(ctx context.Context, id string) error
+	EndRaid(ctx context.Context) error
 }
 
 // engine is and implmentation of `Engine`
@@ -96,12 +96,20 @@ func (e *engine) SubmitRaid(ctx context.Context, raid Raid) (string, error) {
 	return raid.Message.ID, nil
 }
 
-func (e *engine) EndRaid(_ context.Context, id string) error {
-	raid, ok := e.raids[id]
-	if !ok {
-		return nil
+func (e *engine) isOperator(user *discordgo.User, raid Raid) (bool, error) {
+	permissions, err := e.session.UserChannelPermissions(user.ID, raid.Channel.ID)
+	if err != nil {
+		return false, err
 	}
 
+	if (permissions & discordgo.PermissionManageChannels) > 0 {
+		return true, nil
+	}
+
+	return user.ID == raid.Operator.ID, nil
+}
+
+func (e *engine) endRaid(raid Raid) error {
 	if _, err := e.session.ChannelDelete(raid.Channel.ID); err != nil {
 		return err
 	}
@@ -110,8 +118,27 @@ func (e *engine) EndRaid(_ context.Context, id string) error {
 		return err
 	}
 
-	delete(e.raids, id)
+	delete(e.raids, raid.Message.ID)
 	log.Printf("Ending raid: %v", raid)
+	return nil
+}
+
+func (e *engine) EndRaid(ctx context.Context) error {
+	command := ctx.Value(discord.ContextMessageKey).(*discordgo.MessageCreate)
+
+	for _, r := range e.raids {
+		if r.Channel.ID != command.ChannelID {
+			continue
+		}
+
+		operator, err := e.isOperator(command.Author, r)
+		if !operator || err != nil {
+			return err
+		}
+
+		return e.endRaid(r)
+	}
+
 	return nil
 }
 
