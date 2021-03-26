@@ -18,11 +18,11 @@ package command
 import (
 	"context"
 
-	"github.com/bwmarrin/discordgo"
+	"github.com/jonathanarnault/cgear-go/go/discord"
 )
 
 // CommandFn is the resolver function for a command
-type CommandFn func(context.Context, *discordgo.Session, Arguments) error
+type CommandFn func(context.Context, discord.Session, Arguments) error
 
 // Command allows to build commands
 type Command interface {
@@ -40,7 +40,7 @@ type Command interface {
 	AddResolver(CommandFn)
 
 	// execute command with the provided context and parser
-	execute(context.Context, *discordgo.Session, Parser) error
+	execute(context.Context, discord.Session, Parser) error
 }
 
 // command is an implementation of `Command`
@@ -72,7 +72,7 @@ func (c *command) AddResolver(resolver CommandFn) {
 	c.resolver = resolver
 }
 
-func (c command) execute(ctx context.Context, session *discordgo.Session, parser Parser) error {
+func (c command) execute(ctx context.Context, session discord.Session, parser Parser) error {
 	arguments := &arguments{values: make(map[string]interface{})}
 
 	for _, parameter := range c.parameters {

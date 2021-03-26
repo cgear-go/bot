@@ -42,7 +42,7 @@ type Engine interface {
 type engine struct {
 
 	// session holds the Discord Bot connection
-	session *discordgo.Session
+	session discord.Session
 
 	// raids holds the raids that are ongoing
 	raids map[string]Raid
@@ -143,7 +143,7 @@ func (e *engine) EndRaid(ctx context.Context) error {
 }
 
 // NewEngine creates a new raid engine
-func NewEngine(session *discordgo.Session) Engine {
+func NewEngine(session discord.Session) Engine {
 	return &engine{
 		session: session,
 		raids:   make(map[string]Raid),
