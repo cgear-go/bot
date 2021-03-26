@@ -45,7 +45,7 @@ func main() {
 		AddString("time").
 		AddInt("invites").
 		AddRest("gym").
-		AddResolver(func(ctx context.Context, bot *discordgo.Session, args command.Arguments) error {
+		AddResolver(func(ctx context.Context, bot discord.Session, args command.Arguments) error {
 			command := ctx.Value(discord.ContextMessageKey).(*discordgo.MessageCreate)
 
 			if command.ChannelID != raidChannelId {
@@ -79,7 +79,7 @@ func main() {
 		})
 
 	dispatcher.AddCommand("fin").
-		AddResolver(func(ctx context.Context, bot *discordgo.Session, args command.Arguments) error {
+		AddResolver(func(ctx context.Context, bot discord.Session, args command.Arguments) error {
 			err := engine.EndRaid(ctx)
 			if err != nil {
 				return err
