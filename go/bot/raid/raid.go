@@ -16,6 +16,7 @@ package raid
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -23,12 +24,14 @@ import (
 
 // Raid represents a raid
 type Raid struct {
-
-	// Message corresponds to the message used to register to raid
-	Message *discordgo.Message
-
 	// Channel corresponds to the raid channel
 	Channel *discordgo.Channel
+
+	// Gate corresponds to the message used to participate to raid
+	Gate *discordgo.Message
+
+	// Announce corresponds to the message that lists players in the raid channel
+	Announce *discordgo.Message
 
 	// Level holds the raid level
 	Level string
@@ -42,11 +45,26 @@ type Raid struct {
 	// Invites contains the number of invites available
 	Invites int
 
-	// Attendees corresponds to the users invited to the raid
-	Attendees []*discordgo.User
+	// RemoteAttendees corresponds to the attendees that need to be invited
+	RemoteAttendees []*discordgo.User
+
+	// LocalAttendees corresponds to the users that do not need to be invited
+	LocalAttendees []*discordgo.User
 
 	// Start holds the raid launch time
 	Start time.Time
+}
+
+func (f Raid) formatAttendees(attendees []*discordgo.User) string {
+	sb := strings.Builder{}
+
+	for _, attendee := range attendees {
+		sb.WriteString("- ")
+		sb.WriteString(attendee.Mention())
+		sb.WriteString("\n")
+	}
+
+	return sb.String()
 }
 
 func (r Raid) String() string {
@@ -58,7 +76,7 @@ func (r Raid) String() string {
 		r.Gym)
 }
 
-func (r Raid) Announcement() string {
+func (r Raid) FormatGate() string {
 	return fmt.Sprintf(
 		`%s
 
@@ -69,4 +87,19 @@ Pour participer au raid :
 %d invitations à distance disponibles.`,
 		r.String(),
 		r.Invites)
+}
+
+func (r Raid) FormatAnnounce() string {
+	return fmt.Sprintf(
+		`%s
+
+Participants invités à distance : %s
+
+Participants : %s
+- %s
+`,
+		r.String(),
+		r.formatAttendees(r.LocalAttendees),
+		r.formatAttendees(r.RemoteAttendees),
+		r.Operator.Mention())
 }

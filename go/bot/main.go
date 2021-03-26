@@ -64,12 +64,13 @@ func main() {
 			now := time.Now()
 
 			raid := raid.Raid{
-				Level:     args.GetString("level"),
-				Gym:       args.GetString("gym"),
-				Operator:  command.Author,
-				Invites:   args.GetInt("invites"),
-				Attendees: make([]*discordgo.User, 0),
-				Start:     time.Date(now.Year(), now.Month(), now.Day(), hours, minutes, 0, 0, time.Local),
+				Level:           args.GetString("level"),
+				Gym:             args.GetString("gym"),
+				Operator:        command.Author,
+				Invites:         args.GetInt("invites"),
+				RemoteAttendees: make([]*discordgo.User, 0),
+				LocalAttendees:  make([]*discordgo.User, 0),
+				Start:           time.Date(now.Year(), now.Month(), now.Day(), hours, minutes, 0, 0, time.Local),
 			}
 
 			if _, err := engine.SubmitRaid(ctx, raid); err != nil {

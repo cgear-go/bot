@@ -62,16 +62,16 @@ func (e *engine) SubmitRaid(ctx context.Context, raid Raid) (string, error) {
 		return "", err
 	}
 
-	message, err := e.session.ChannelMessageSend(command.ChannelID, raid.Announcement())
+	gate, err := e.session.ChannelMessageSend(command.ChannelID, raid.FormatGate())
 	if err != nil {
 		return "", err
 	}
 
-	if err := e.session.MessageReactionAdd(message.ChannelID, message.ID, "🙏"); err != nil {
+	if err := e.session.MessageReactionAdd(gate.ChannelID, gate.ID, "🙏"); err != nil {
 		return "", err
 	}
 
-	if err := e.session.MessageReactionAdd(message.ChannelID, message.ID, "👍"); err != nil {
+	if err := e.session.MessageReactionAdd(gate.ChannelID, gate.ID, "👍"); err != nil {
 		return "", err
 	}
 
@@ -82,18 +82,18 @@ func (e *engine) SubmitRaid(ctx context.Context, raid Raid) (string, error) {
 		return "", err
 	}
 
-	if _, err := e.session.ChannelMessageSend(channel.ID,
-		fmt.Sprintf("Raid organisé par %s, code ami:", command.Author.Mention())); err != nil {
-
+	announce, err := e.session.ChannelMessageSend(channel.ID, raid.FormatAnnounce())
+	if err != nil {
 		return "", err
 	}
 
 	raid.Channel = channel
-	raid.Message = message
+	raid.Gate = gate
+	raid.Announce = announce
 
 	log.Printf("Creating raid: %v", raid)
-	e.raids[raid.Message.ID] = raid
-	return raid.Message.ID, nil
+	e.raids[raid.Gate.ID] = raid
+	return raid.Gate.ID, nil
 }
 
 func (e *engine) isOperator(user *discordgo.User, raid Raid) (bool, error) {
@@ -114,11 +114,11 @@ func (e *engine) endRaid(raid Raid) error {
 		return err
 	}
 
-	if err := e.session.ChannelMessageDelete(raid.Message.ChannelID, raid.Message.ID); err != nil {
+	if err := e.session.ChannelMessageDelete(raid.Gate.ChannelID, raid.Gate.ID); err != nil {
 		return err
 	}
 
-	delete(e.raids, raid.Message.ID)
+	delete(e.raids, raid.Gate.ID)
 	log.Printf("Ending raid: %v", raid)
 	return nil
 }
