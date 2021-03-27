@@ -18,6 +18,8 @@ import "github.com/bwmarrin/discordgo"
 
 // Session
 type Session interface {
+	AddHandler(handler interface{}) func()
+
 	// GuildChannelCreateComplex
 	GuildChannelCreateComplex(guildID string, data discordgo.GuildChannelCreateData) (*discordgo.Channel, error)
 

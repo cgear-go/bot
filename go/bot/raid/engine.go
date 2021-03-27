@@ -18,14 +18,10 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
+	"sync"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/jonathanarnault/cgear-go/go/discord"
-)
-
-var (
-	raidCategoryId = os.Getenv("RAID_CATEGORY_ID")
 )
 
 // Engine represents the raid engine
@@ -36,26 +32,41 @@ type Engine interface {
 
 	// EndRaid clears raid resources
 	EndRaid(ctx context.Context) error
+
+	// ListenReactionAdd creates a listener for added reactions for raid gates
+	ListenReactions() func()
 }
 
 // engine is and implmentation of `Engine`
 type engine struct {
+
+	// lock used for concurrency
+	lock *sync.Mutex
 
 	// session holds the Discord Bot connection
 	session discord.Session
 
 	// raids holds the raids that are ongoing
 	raids map[string]Raid
+
+	// channelID holds the channel ID where raid commands are listened
+	channelID string
+
+	// categoryID holds the category where lobbies will be created
+	categoryID string
 }
 
 func (e *engine) SubmitRaid(ctx context.Context, raid Raid) (string, error) {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+
 	command := ctx.Value(discord.ContextMessageKey).(*discordgo.MessageCreate)
 
 	channel, err := e.session.GuildChannelCreateComplex(
 		command.GuildID,
 		discordgo.GuildChannelCreateData{
 			Name:                 fmt.Sprintf("raid-%s", raid.Start.Format("02-01-15h04")),
-			ParentID:             raidCategoryId,
+			ParentID:             e.categoryID,
 			PermissionOverwrites: []*discordgo.PermissionOverwrite{},
 		})
 	if err != nil {
@@ -97,6 +108,9 @@ func (e *engine) SubmitRaid(ctx context.Context, raid Raid) (string, error) {
 }
 
 func (e *engine) isOperator(user *discordgo.User, raid Raid) (bool, error) {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+
 	permissions, err := e.session.UserChannelPermissions(user.ID, raid.Channel.ID)
 	if err != nil {
 		return false, err
@@ -142,10 +156,46 @@ func (e *engine) EndRaid(ctx context.Context) error {
 	return nil
 }
 
+func (e engine) ListenReactions() func() {
+	addListenerCancel := e.session.AddHandler(func(session *discordgo.Session, reaction *discordgo.MessageReactionAdd) {
+		if reaction.UserID == session.State.User.ID {
+			return
+		}
+
+		if reaction.ChannelID != e.channelID {
+			return
+		}
+
+		if reaction.Emoji.Name != "🙏" && reaction.Emoji.Name != "👍" {
+			session.MessageReactionRemove(reaction.ChannelID, reaction.MessageID, reaction.Emoji.Name, reaction.UserID)
+			return
+		}
+
+		_, ok := e.raids[reaction.MessageID]
+		if !ok {
+			return
+		}
+
+		switch reaction.Emoji.ID {
+		case "🙏":
+			return
+		case "👍":
+			return
+		}
+	})
+
+	return func() {
+		addListenerCancel()
+	}
+}
+
 // NewEngine creates a new raid engine
-func NewEngine(session discord.Session) Engine {
+func NewEngine(session discord.Session, channelID, categoryID string) Engine {
 	return &engine{
-		session: session,
-		raids:   make(map[string]Raid),
+		lock:       &sync.Mutex{},
+		session:    session,
+		raids:      make(map[string]Raid),
+		channelID:  channelID,
+		categoryID: categoryID,
 	}
 }
