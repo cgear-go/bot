@@ -29,6 +29,9 @@ type Session interface {
 	// ChannelPermissionSet
 	ChannelPermissionSet(channelID, targetID string, targetType discordgo.PermissionOverwriteType, allow, deny int64) error
 
+	// ChannelPermissionDelete
+	ChannelPermissionDelete(channelID, targetID string) error
+
 	// ChannelMessageSend
 	ChannelMessageSend(channelID string, content string) (*discordgo.Message, error)
 
