@@ -56,6 +56,32 @@ type engine struct {
 	categoryID string
 }
 
+func (e *engine) addUser(channelID, userID string) error {
+	return e.session.ChannelPermissionSet(
+		channelID, userID, discordgo.PermissionOverwriteTypeMember,
+		discordgo.PermissionViewChannel, 0)
+}
+
+func (e *engine) removeUser(channelID, userID string) error {
+	return e.session.ChannelPermissionDelete(channelID, userID)
+}
+
+func (e *engine) isOperator(user *discordgo.User, raid Raid) (bool, error) {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+
+	permissions, err := e.session.UserChannelPermissions(user.ID, raid.Channel.ID)
+	if err != nil {
+		return false, err
+	}
+
+	if (permissions & discordgo.PermissionManageChannels) > 0 {
+		return true, nil
+	}
+
+	return user.ID == raid.Operator.ID, nil
+}
+
 func (e *engine) SubmitRaid(ctx context.Context, raid Raid) (string, error) {
 	e.lock.Lock()
 	defer e.lock.Unlock()
@@ -86,10 +112,7 @@ func (e *engine) SubmitRaid(ctx context.Context, raid Raid) (string, error) {
 		return "", err
 	}
 
-	if err := e.session.ChannelPermissionSet(
-		channel.ID, command.Author.ID, discordgo.PermissionOverwriteTypeMember,
-		discordgo.PermissionViewChannel, 0); err != nil {
-
+	if err := e.addUser(channel.ID, command.Author.ID); err != nil {
 		return "", err
 	}
 
@@ -105,22 +128,6 @@ func (e *engine) SubmitRaid(ctx context.Context, raid Raid) (string, error) {
 	log.Printf("Creating raid: %v", raid)
 	e.raids[raid.Gate.ID] = raid
 	return raid.Gate.ID, nil
-}
-
-func (e *engine) isOperator(user *discordgo.User, raid Raid) (bool, error) {
-	e.lock.Lock()
-	defer e.lock.Unlock()
-
-	permissions, err := e.session.UserChannelPermissions(user.ID, raid.Channel.ID)
-	if err != nil {
-		return false, err
-	}
-
-	if (permissions & discordgo.PermissionManageChannels) > 0 {
-		return true, nil
-	}
-
-	return user.ID == raid.Operator.ID, nil
 }
 
 func (e *engine) endRaid(raid Raid) error {
