@@ -36,10 +36,11 @@ func main() {
 	}
 	defer session.Close()
 
-	dispatcher := command.NewDispatcher(session)
-	engine := raid.NewEngine(session)
-
 	raidChannelId := os.Getenv("RAID_CHANNEL_ID")
+
+	dispatcher := command.NewDispatcher(session)
+	engine := raid.NewEngine(session, raidChannelId, os.Getenv("RAID_CATEGORY_ID"))
+
 	dispatcher.AddCommand("raid").
 		AddString("level").
 		AddString("time").
@@ -88,10 +89,12 @@ func main() {
 			return nil
 		})
 
+	cancelReactionAddListener := engine.ListenReactions()
 	cancelCommandListener := dispatcher.ListenMessages(raidChannelId)
 	fmt.Println("CGear Bot connected to Discord, press Ctrl + C to exit")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
 	cancelCommandListener()
+	cancelReactionAddListener()
 }
