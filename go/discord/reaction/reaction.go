@@ -14,26 +14,26 @@
 
 package reaction
 
-import "github.com/jonathanarnault/cgear-go/go/discord"
+import "github.com/jonathanarnault/cgear-go/go/discord/session"
 
 // Reaction represents a reaction on a message
 type Reaction struct {
 
 	// Guild is the guild where the action was performed
-	Guild string
+	GuildID string
 
 	// User is the user that performed the action
-	User string
+	UserID string
 
 	// Channel is the channel where the action was performed
-	Channel string
+	ChannelID string
 
 	// Message holds the message where the action was performed
-	Message string
+	MessageID string
 
 	// Emoji holds the reaction emoji ID
-	Emoji string
+	EmojiID string
 }
 
 // ReactionFn is the callback used to listen for reactions events
-type ReactionFn func(session discord.Session, reaction Reaction) (err error)
+type ReactionFn func(session session.Session, reaction *Reaction) (err error)
