@@ -12,13 +12,14 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-//go:generate mockgen -destination command_mock_test.go -package command . Command
+//go:generate mockgen -destination command_builder_mock_test.go -package command . Command
 package command
 
 import (
 	"context"
 
 	"github.com/jonathanarnault/cgear-go/go/discord"
+	"github.com/jonathanarnault/cgear-go/go/discord/session"
 )
 
 // CommandFn is the resolver function for a command
@@ -35,6 +36,9 @@ type Command interface {
 
 	// AddRest add the rest of the arguments concatenated with a whitespace to the command
 	AddRest(name string) Command
+
+	// AddChannelFilter adds a channel filter for the command
+	AddChannelFilter(filter session.ChannelFilter) Command
 
 	// AddResolver sets the command resolver
 	AddResolver(CommandFn)
@@ -65,6 +69,10 @@ func (c *command) AddString(name string) Command {
 
 func (c *command) AddRest(name string) Command {
 	c.parameters = append(c.parameters, parameter{name: name, tpe: parameterTypeRest})
+	return c
+}
+
+func (c *command) AddChannelFilter(filter session.ChannelFilter) Command {
 	return c
 }
 
