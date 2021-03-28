@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	discord "github.com/jonathanarnault/cgear-go/go/discord"
+	session "github.com/jonathanarnault/cgear-go/go/discord/session"
 )
 
 // MockCommand is a mock of Command interface.
@@ -33,6 +34,20 @@ func NewMockCommand(ctrl *gomock.Controller) *MockCommand {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCommand) EXPECT() *MockCommandMockRecorder {
 	return m.recorder
+}
+
+// AddChannelFilter mocks base method.
+func (m *MockCommand) AddChannelFilter(arg0 session.ChannelFilter) Command {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddChannelFilter", arg0)
+	ret0, _ := ret[0].(Command)
+	return ret0
+}
+
+// AddChannelFilter indicates an expected call of AddChannelFilter.
+func (mr *MockCommandMockRecorder) AddChannelFilter(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddChannelFilter", reflect.TypeOf((*MockCommand)(nil).AddChannelFilter), arg0)
 }
 
 // AddInt mocks base method.

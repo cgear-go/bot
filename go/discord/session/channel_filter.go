@@ -12,29 +12,17 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-package discord
+package session
 
-import (
-	"errors"
-	"fmt"
+// ChannelContext holds the context for a channel event
+type ChannelContext struct {
 
-	"github.com/bwmarrin/discordgo"
-)
+	// Guild holds the guild ID
+	Guild string
 
-// NewBot connects to a discord server as a bot
-func NewBot(token string) (*discordgo.Session, error) {
-	if token == "" {
-		return nil, errors.New("invalid discord token")
-	}
-
-	connection, err := discordgo.New(fmt.Sprintf("Bot %s", token))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create Discord connection: %v", err)
-	}
-
-	if err := connection.Open(); err != nil {
-		return nil, fmt.Errorf("failed to open Discord connection: %v", err)
-	}
-
-	return connection, nil
+	// Channel holds the channel ID
+	Channel string
 }
+
+// ChannelFilter represents a channel filter function
+type ChannelFilter func(context ChannelContext) (skip bool, err error)
