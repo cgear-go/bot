@@ -14,15 +14,5 @@
 
 package session
 
-// ChannelContext holds the context for a channel event
-type ChannelContext struct {
-
-	// Guild holds the guild ID
-	Guild string
-
-	// Channel holds the channel ID
-	Channel string
-}
-
 // ChannelFilter represents a channel filter function
-type ChannelFilter func(context ChannelContext) (skip bool, err error)
+type ChannelFilter func(guildID, channelID string) (skip bool, err error)
