@@ -19,19 +19,22 @@ import "github.com/jonathanarnault/cgear-go/go/discord/session"
 // Reaction represents a reaction on a message
 type Reaction struct {
 
-	// Guild is the guild where the action was performed
-	GuildID string
-
-	// User is the user that performed the action
+	// UserID is the user that performed the action
 	UserID string
 
-	// Channel is the channel where the action was performed
+	// UserPermission holds the user permission
+	UserPermission int64
+
+	// GuildID is the guild where the action was performed
+	GuildID string
+
+	// ChannelID is the channel where the action was performed
 	ChannelID string
 
-	// Message holds the message where the action was performed
+	// MessageID holds the message where the action was performed
 	MessageID string
 
-	// Emoji holds the reaction emoji ID
+	// EmojiID holds the reaction emoji ID
 	EmojiID string
 }
 

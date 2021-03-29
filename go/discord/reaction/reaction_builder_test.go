@@ -22,34 +22,34 @@ import (
 	"github.com/jonathanarnault/cgear-go/go/discord/session"
 )
 
-func TestReactionBuilder__AddChannelFilter(t *testing.T) {
+func TestReactionBuilder__AddFilter(t *testing.T) {
 	g := goblin.Goblin(t)
-	g.Describe("reactionBuilder.AddChannelFilter", func() {
+	g.Describe("reactionBuilder.AddFilter", func() {
 		g.It("Should add filter to reactionBuilder", func() {
 			builder := &reactionBuilder{
-				channelFilters:  make([]session.ChannelFilter, 0, 1),
+				filters:         make([]FilterFn, 0, 1),
 				reactionAdded:   nil,
 				reactionRemoved: nil,
 			}
 
-			builder.AddChannelFilter(func(string, string) (bool, error) {
+			builder.AddFilter(func(*Reaction) (bool, error) {
 				return false, io.EOF
 			})
 
-			builder.AddChannelFilter(func(string, string) (bool, error) {
+			builder.AddFilter(func(*Reaction) (bool, error) {
 				return true, nil
 			})
 
-			g.Assert(len(builder.channelFilters)).Eql(2)
+			g.Assert(len(builder.filters)).Eql(2)
 
 			{
-				skip, err := builder.channelFilters[0]("gid", "cid")
+				skip, err := builder.filters[0](nil)
 				g.Assert(skip).Eql(false)
 				g.Assert(err).Eql(io.EOF)
 			}
 
 			{
-				skip, err := builder.channelFilters[1]("gid", "cid")
+				skip, err := builder.filters[1](nil)
 				g.Assert(skip).Eql(true)
 				g.Assert(err).Eql(nil)
 			}
@@ -62,7 +62,7 @@ func TestReactionBuilder__OnReactionAdded(t *testing.T) {
 	g.Describe("reactionBuilder.OnReactionAdded", func() {
 		g.It("Should register reactionAdded callback", func() {
 			builder := &reactionBuilder{
-				channelFilters:  make([]session.ChannelFilter, 0, 1),
+				filters:         make([]FilterFn, 0),
 				reactionAdded:   nil,
 				reactionRemoved: nil,
 			}
@@ -77,7 +77,7 @@ func TestReactionBuilder__OnReactionAdded(t *testing.T) {
 
 		g.It("Should register unregister previous callback when called muliple times", func() {
 			builder := &reactionBuilder{
-				channelFilters:  make([]session.ChannelFilter, 0, 1),
+				filters:         make([]FilterFn, 0),
 				reactionAdded:   nil,
 				reactionRemoved: nil,
 			}
@@ -101,7 +101,7 @@ func TestReactionBuilder__OnReactionRemoved(t *testing.T) {
 	g.Describe("reactionBuilder.OnReactionRemoved", func() {
 		g.It("Should register reactionAdded callback", func() {
 			builder := &reactionBuilder{
-				channelFilters:  make([]session.ChannelFilter, 0, 1),
+				filters:         make([]FilterFn, 0),
 				reactionAdded:   nil,
 				reactionRemoved: nil,
 			}
@@ -116,7 +116,7 @@ func TestReactionBuilder__OnReactionRemoved(t *testing.T) {
 
 		g.It("Should register unregister previous callback when called muliple times", func() {
 			builder := &reactionBuilder{
-				channelFilters:  make([]session.ChannelFilter, 0, 1),
+				filters:         make([]FilterFn, 0),
 				reactionAdded:   nil,
 				reactionRemoved: nil,
 			}
