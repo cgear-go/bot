@@ -23,7 +23,7 @@ type Reaction struct {
 	UserID string
 
 	// UserPermission holds the user permission
-	UserPermission int64
+	UserPermissions int64
 
 	// GuildID is the guild where the action was performed
 	GuildID string

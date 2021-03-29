@@ -9,7 +9,6 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	reaction "github.com/jonathanarnault/cgear-go/go/discord/reaction"
-	session "github.com/jonathanarnault/cgear-go/go/discord/session"
 )
 
 // MockReactionBuilder is a mock of ReactionBuilder interface.
@@ -35,18 +34,18 @@ func (m *MockReactionBuilder) EXPECT() *MockReactionBuilderMockRecorder {
 	return m.recorder
 }
 
-// AddChannelFilter mocks base method.
-func (m *MockReactionBuilder) AddChannelFilter(arg0 session.ChannelFilter) reaction.ReactionBuilder {
+// AddFilter mocks base method.
+func (m *MockReactionBuilder) AddFilter(arg0 reaction.FilterFn) reaction.ReactionBuilder {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddChannelFilter", arg0)
+	ret := m.ctrl.Call(m, "AddFilter", arg0)
 	ret0, _ := ret[0].(reaction.ReactionBuilder)
 	return ret0
 }
 
-// AddChannelFilter indicates an expected call of AddChannelFilter.
-func (mr *MockReactionBuilderMockRecorder) AddChannelFilter(arg0 interface{}) *gomock.Call {
+// AddFilter indicates an expected call of AddFilter.
+func (mr *MockReactionBuilderMockRecorder) AddFilter(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddChannelFilter", reflect.TypeOf((*MockReactionBuilder)(nil).AddChannelFilter), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddFilter", reflect.TypeOf((*MockReactionBuilder)(nil).AddFilter), arg0)
 }
 
 // OnReactionAdded mocks base method.
