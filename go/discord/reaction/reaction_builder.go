@@ -15,15 +15,13 @@
 //go:generate mockgen -destination mock/reaction_builder_mock.go -package mock . ReactionBuilder
 package reaction
 
-import (
-	"github.com/jonathanarnault/cgear-go/go/discord/session"
-)
+type FilterFn func(reaction *Reaction) (skip bool, err error)
 
 // ReactionBuilder allows to build Reactions handlers
 type ReactionBuilder interface {
 
-	// AddChannelFilter adds a channel filter for the ReactionBuilder
-	AddChannelFilter(filter session.ChannelFilter) (builder ReactionBuilder)
+	// AddFilter adds a filter for the ReactionBuilder
+	AddFilter(filter FilterFn) (builder ReactionBuilder)
 
 	// OnReactionAdded is executed when a reaction is added to a message
 	OnReactionAdded(callback ReactionFn) (builder ReactionBuilder)
@@ -35,8 +33,11 @@ type ReactionBuilder interface {
 // reactionBuilder is an implmentation of `ReactionBuilder`
 type reactionBuilder struct {
 
-	// channelFilters holds the filters to apply to the reaction
-	channelFilters []session.ChannelFilter
+	// reactions holds the supported reactions
+	reactions []string
+
+	// filters holds the filters to apply to the reaction
+	filters []FilterFn
 
 	// reactionAdded holds the callback function when a reaction is added
 	reactionAdded ReactionFn
@@ -45,8 +46,8 @@ type reactionBuilder struct {
 	reactionRemoved ReactionFn
 }
 
-func (r *reactionBuilder) AddChannelFilter(filter session.ChannelFilter) ReactionBuilder {
-	r.channelFilters = append(r.channelFilters, filter)
+func (r *reactionBuilder) AddFilter(filter FilterFn) ReactionBuilder {
+	r.filters = append(r.filters, filter)
 	return r
 }
 
