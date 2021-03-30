@@ -29,7 +29,7 @@ type Dispatcher interface {
 
 	// AddCommand registers a command to the dispatcher
 	// Warning: this method is not supposed to be thread safe
-	AddCommand(name string) Command
+	AddCommand(name string) CommandBuilder
 
 	// Execute a command
 	// This method is supposed to be thread safe
@@ -47,12 +47,12 @@ type dispatcher struct {
 	session *discordgo.Session
 
 	// commands holds the available commands
-	commands map[string]Command
+	commands map[string]CommandBuilder
 }
 
-func (d *dispatcher) AddCommand(name string) Command {
+func (d *dispatcher) AddCommand(name string) CommandBuilder {
 	if _, ok := d.commands[name]; !ok {
-		d.commands[name] = &command{
+		d.commands[name] = &commandBuilder{
 			parameters: make([]parameter, 0, 8),
 			resolver:   nil,
 		}
@@ -118,6 +118,6 @@ func (d *dispatcher) ListenMessages(channels ...string) func() {
 func NewDispatcher(session *discordgo.Session) Dispatcher {
 	return &dispatcher{
 		session:  session,
-		commands: make(map[string]Command),
+		commands: make(map[string]CommandBuilder),
 	}
 }

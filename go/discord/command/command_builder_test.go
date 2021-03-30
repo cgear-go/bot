@@ -29,7 +29,7 @@ func TestCommand__AddInt(t *testing.T) {
 	g := goblin.Goblin(t)
 	g.Describe("command.AddInt", func() {
 		g.It("Should append int parameter with the given name to the command parameters", func() {
-			command := &command{
+			command := &commandBuilder{
 				parameters: make([]parameter, 0, 1),
 				resolver:   nil,
 			}
@@ -42,7 +42,7 @@ func TestCommand__AddInt(t *testing.T) {
 		})
 
 		g.It("Should return self", func() {
-			command := &command{
+			command := &commandBuilder{
 				parameters: make([]parameter, 0, 1),
 				resolver:   nil,
 			}
@@ -56,7 +56,7 @@ func TestCommand__AddString(t *testing.T) {
 	g := goblin.Goblin(t)
 	g.Describe("command.AddString", func() {
 		g.It("Should append string parameter with the given name to the command parameters", func() {
-			command := &command{
+			command := &commandBuilder{
 				parameters: make([]parameter, 0, 1),
 				resolver:   nil,
 			}
@@ -69,7 +69,7 @@ func TestCommand__AddString(t *testing.T) {
 		})
 
 		g.It("Should return self", func() {
-			command := &command{
+			command := &commandBuilder{
 				parameters: make([]parameter, 0, 1),
 				resolver:   nil,
 			}
@@ -83,7 +83,7 @@ func TestCommand__AddRest(t *testing.T) {
 	g := goblin.Goblin(t)
 	g.Describe("command.AddRest", func() {
 		g.It("Should append string parameter with the given name to the command parameters", func() {
-			command := &command{
+			command := &commandBuilder{
 				parameters: make([]parameter, 0, 1),
 				resolver:   nil,
 			}
@@ -96,7 +96,7 @@ func TestCommand__AddRest(t *testing.T) {
 		})
 
 		g.It("Should return self", func() {
-			command := &command{
+			command := &commandBuilder{
 				parameters: make([]parameter, 0, 1),
 				resolver:   nil,
 			}
@@ -106,11 +106,44 @@ func TestCommand__AddRest(t *testing.T) {
 	})
 }
 
+func TestCommandBuilder__AddFilter(t *testing.T) {
+	g := goblin.Goblin(t)
+	g.Describe("commandBuilder.AddFilter", func() {
+		g.It("Should add filter to commandBuilder", func() {
+			builder := &commandBuilder{
+				filters: make([]FilterFn, 0, 1),
+			}
+
+			builder.AddFilter(func(*CommandEvent) (bool, error) {
+				return false, io.EOF
+			})
+
+			builder.AddFilter(func(*CommandEvent) (bool, error) {
+				return true, nil
+			})
+
+			g.Assert(len(builder.filters)).Eql(2)
+
+			{
+				skip, err := builder.filters[0](nil)
+				g.Assert(skip).Eql(false)
+				g.Assert(err).Eql(io.EOF)
+			}
+
+			{
+				skip, err := builder.filters[1](nil)
+				g.Assert(skip).Eql(true)
+				g.Assert(err).Eql(nil)
+			}
+		})
+	})
+}
+
 func TestCommand__AddResolver(t *testing.T) {
 	g := goblin.Goblin(t)
 	g.Describe("command.AddResolver", func() {
 		g.It("Should set command resolver", func() {
-			command := &command{
+			command := &commandBuilder{
 				parameters: make([]parameter, 0, 1),
 				resolver:   nil,
 			}
@@ -126,7 +159,7 @@ func TestCommand(t *testing.T) {
 	g := goblin.Goblin(t)
 	g.Describe("command", func() {
 		g.It("Should support chaining", func() {
-			command := &command{
+			command := &commandBuilder{
 				parameters: make([]parameter, 0, 1),
 				resolver:   nil,
 			}
@@ -165,7 +198,7 @@ func TestCommand__execute(t *testing.T) {
 				ReadRest().
 				Return("Fontaine Pépinière", nil)
 
-			command := &command{
+			command := &commandBuilder{
 				parameters: []parameter{
 					{
 						name: "count",
@@ -190,7 +223,7 @@ func TestCommand__execute(t *testing.T) {
 		})
 
 		g.It("Should return an error if argument parsing fails", func() {
-			command := &command{
+			command := &commandBuilder{
 				parameters: []parameter{
 					{
 						name: "count",
@@ -208,7 +241,7 @@ func TestCommand__execute(t *testing.T) {
 		})
 
 		g.It("Should return an error if command fails", func() {
-			command := &command{
+			command := &commandBuilder{
 				parameters: []parameter{
 					{
 						name: "count",
