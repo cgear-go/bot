@@ -18,14 +18,14 @@ package command
 import (
 	"context"
 
-	"github.com/jonathanarnault/cgear-go/go/discord"
+	"github.com/jonathanarnault/cgear-go/go/discord/session"
 )
 
 // FilterFn is a function used to filter commands
 type FilterFn func(event *CommandEvent) (skip bool, err error)
 
 // CommandFn is the resolver function for a command
-type CommandFn func(context.Context, discord.Session, Arguments) error
+type CommandFn func(context.Context, session.Session, Arguments) error
 
 // CommandBuilder allows to build commands
 type CommandBuilder interface {
@@ -46,7 +46,7 @@ type CommandBuilder interface {
 	AddResolver(CommandFn)
 
 	// execute command with the provided context and parser
-	execute(context.Context, discord.Session, Parser) error
+	execute(context.Context, session.Session, Parser) error
 }
 
 // commandBuilder is an implementation of `Command`
@@ -86,7 +86,7 @@ func (c *commandBuilder) AddResolver(resolver CommandFn) {
 	c.resolver = resolver
 }
 
-func (c commandBuilder) execute(ctx context.Context, session discord.Session, parser Parser) error {
+func (c commandBuilder) execute(ctx context.Context, session session.Session, parser Parser) error {
 	arguments := &arguments{values: make(map[string]interface{})}
 
 	for _, parameter := range c.parameters {

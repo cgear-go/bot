@@ -27,27 +27,28 @@ import (
 	"github.com/jonathanarnault/cgear-go/go/bot/raid"
 	"github.com/jonathanarnault/cgear-go/go/discord"
 	"github.com/jonathanarnault/cgear-go/go/discord/command"
+	"github.com/jonathanarnault/cgear-go/go/discord/session"
 )
 
 func main() {
-	session, err := discord.NewBot(os.Getenv("DISCORD_TOKEN"))
+	connection, err := discord.NewBot(os.Getenv("DISCORD_TOKEN"))
 	if err != nil {
 		log.Fatalf("Failed to start Discord bot: %v", err)
 	}
-	defer session.Close()
+	defer connection.Close()
 
 	raidChannelId := os.Getenv("RAID_CHANNEL_ID")
 
-	dispatcher := command.NewDispatcher(session)
-	engine := raid.NewEngine(session, raidChannelId, os.Getenv("RAID_CATEGORY_ID"))
+	dispatcher := command.NewDispatcher(connection)
+	engine := raid.NewEngine(connection, raidChannelId, os.Getenv("RAID_CATEGORY_ID"))
 
 	dispatcher.AddCommand("raid").
 		AddString("level").
 		AddString("time").
 		AddInt("invites").
 		AddRest("gym").
-		AddResolver(func(ctx context.Context, bot discord.Session, args command.Arguments) error {
-			command := ctx.Value(discord.ContextMessageKey).(*discordgo.MessageCreate)
+		AddResolver(func(ctx context.Context, bot session.Session, args command.Arguments) error {
+			command := ctx.Value("message").(*discordgo.MessageCreate)
 
 			if command.ChannelID != raidChannelId {
 				log.Printf("Skipping command (%s != %s)", command.ChannelID, raidChannelId)
@@ -81,7 +82,7 @@ func main() {
 		})
 
 	dispatcher.AddCommand("fin").
-		AddResolver(func(ctx context.Context, bot discord.Session, args command.Arguments) error {
+		AddResolver(func(ctx context.Context, bot session.Session, args command.Arguments) error {
 			err := engine.EndRaid(ctx)
 			if err != nil {
 				return err

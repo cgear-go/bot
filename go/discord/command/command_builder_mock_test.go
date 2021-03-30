@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	discord "github.com/jonathanarnault/cgear-go/go/discord"
+	session "github.com/jonathanarnault/cgear-go/go/discord/session"
 )
 
 // MockCommandBuilder is a mock of CommandBuilder interface.
@@ -104,7 +104,7 @@ func (mr *MockCommandBuilderMockRecorder) AddString(arg0 interface{}) *gomock.Ca
 }
 
 // execute mocks base method.
-func (m *MockCommandBuilder) execute(arg0 context.Context, arg1 discord.Session, arg2 Parser) error {
+func (m *MockCommandBuilder) execute(arg0 context.Context, arg1 session.Session, arg2 Parser) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "execute", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)

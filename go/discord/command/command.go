@@ -14,21 +14,9 @@
 
 package command
 
-// Command represents q command that was executed
-type Command struct {
+// Command represents a command
+type Command interface {
 
-	// UserID is the user that performed the command
-	UserID string
-
-	// GuildID is the guild where the command was performed
-	GuildID string
-
-	// ChannelID is the channel where the command was performed
-	ChannelID string
-
-	// MessageID holds the message where the command was performed
-	MessageID string
-
-	// Arguments holds the command arguments
-	Arguments Arguments
+	// Execute the command
+	Execute(command string)
 }

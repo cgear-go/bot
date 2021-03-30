@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/jonathanarnault/cgear-go/go/discord"
 )
 
 // Dispatcher represents a command dispatcher
@@ -104,7 +103,7 @@ func (d *dispatcher) ListenMessages(channels ...string) func() {
 		}
 
 		ctx := context.Background()
-		ctx = context.WithValue(ctx, discord.ContextMessageKey, message)
+		ctx = context.WithValue(ctx, "message", message)
 		err := d.Execute(ctx, content[1:])
 		if err != nil {
 			log.Printf("Failed to execute command (%s): %v", content, err)

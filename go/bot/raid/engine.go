@@ -21,7 +21,7 @@ import (
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/jonathanarnault/cgear-go/go/discord"
+	"github.com/jonathanarnault/cgear-go/go/discord/session"
 )
 
 // Engine represents the raid engine
@@ -44,7 +44,7 @@ type engine struct {
 	lock *sync.Mutex
 
 	// session holds the Discord Bot connection
-	session discord.Session
+	session session.Session
 
 	// raids holds the raids that are ongoing
 	raids map[string]Raid
@@ -86,7 +86,7 @@ func (e *engine) SubmitRaid(ctx context.Context, raid Raid) (string, error) {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 
-	command := ctx.Value(discord.ContextMessageKey).(*discordgo.MessageCreate)
+	command := ctx.Value("message").(*discordgo.MessageCreate)
 
 	channel, err := e.session.GuildChannelCreateComplex(
 		command.GuildID,
@@ -145,7 +145,7 @@ func (e *engine) endRaid(raid Raid) error {
 }
 
 func (e *engine) EndRaid(ctx context.Context) error {
-	command := ctx.Value(discord.ContextMessageKey).(*discordgo.MessageCreate)
+	command := ctx.Value("message").(*discordgo.MessageCreate)
 
 	for _, r := range e.raids {
 		if r.Channel.ID != command.ChannelID {
@@ -164,40 +164,12 @@ func (e *engine) EndRaid(ctx context.Context) error {
 }
 
 func (e engine) ListenReactions() func() {
-	addListenerCancel := e.session.AddHandler(func(session *discordgo.Session, reaction *discordgo.MessageReactionAdd) {
-		if reaction.UserID == session.State.User.ID {
-			return
-		}
-
-		if reaction.ChannelID != e.channelID {
-			return
-		}
-
-		if reaction.Emoji.Name != "🙏" && reaction.Emoji.Name != "👍" {
-			session.MessageReactionRemove(reaction.ChannelID, reaction.MessageID, reaction.Emoji.Name, reaction.UserID)
-			return
-		}
-
-		_, ok := e.raids[reaction.MessageID]
-		if !ok {
-			return
-		}
-
-		switch reaction.Emoji.ID {
-		case "🙏":
-			return
-		case "👍":
-			return
-		}
-	})
-
 	return func() {
-		addListenerCancel()
 	}
 }
 
 // NewEngine creates a new raid engine
-func NewEngine(session discord.Session, channelID, categoryID string) Engine {
+func NewEngine(session session.Session, channelID, categoryID string) Engine {
 	return &engine{
 		lock:       &sync.Mutex{},
 		session:    session,
