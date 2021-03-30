@@ -14,36 +14,33 @@
 
 package discord
 
-import "github.com/bwmarrin/discordgo"
-
-// Session
+// Session is an interface
 type Session interface {
-	AddHandler(handler interface{}) func()
 
-	// GuildChannelCreateComplex
-	GuildChannelCreateComplex(guildID string, data discordgo.GuildChannelCreateData) (*discordgo.Channel, error)
+	// GuildChannelTextCreate
+	GuildChannelTextCreate(guildID, categoryID string, name string) (channelID string, err error)
 
 	// ChannelDelete
-	ChannelDelete(channelID string) (*discordgo.Channel, error)
-
-	// ChannelPermissionSet
-	ChannelPermissionSet(channelID, targetID string, targetType discordgo.PermissionOverwriteType, allow, deny int64) error
+	ChannelDelete(channelID string) (err error)
 
 	// ChannelPermissionDelete
-	ChannelPermissionDelete(channelID, targetID string) error
+	ChannelPermissionDelete(channelID, targetID string) (err error)
 
 	// ChannelMessageSend
-	ChannelMessageSend(channelID string, content string) (*discordgo.Message, error)
+	ChannelMessageSend(channelID string, content string) (messageID string, err error)
 
 	// ChannelMessageDelete
-	ChannelMessageDelete(channelID, messageID string) error
+	ChannelMessageDelete(channelID, messageID string) (err error)
+
+	// UserChannelPermissionSet
+	UserChannelPermissionSet(channelID, targetID string, allow, deny int64) (err error)
 
 	// UserChannelPermissions
-	UserChannelPermissions(userID, channelID string) (int64, error)
+	UserChannelPermissions(userID, channelID string) (permissions int64, err error)
 
 	// MessageReactionAdd
-	MessageReactionAdd(channelID, messageID, emojiID string) error
+	MessageReactionAdd(channelID, messageID, emojiID string) (err error)
 
 	// MessageReactionRemove
-	MessageReactionRemove(channelID, messageID, emojiID, userID string) error
+	MessageReactionRemove(channelID, messageID, emojiID, userID string) (err error)
 }

@@ -22,7 +22,7 @@ import (
 
 	"github.com/franela/goblin"
 	"github.com/golang/mock/gomock"
-	"github.com/jonathanarnault/cgear-go/go/discord"
+	"github.com/jonathanarnault/cgear-go/go/discord/session"
 )
 
 func TestCommand__AddInt(t *testing.T) {
@@ -148,7 +148,7 @@ func TestCommand__AddResolver(t *testing.T) {
 				resolver:   nil,
 			}
 
-			resolver := func(context.Context, discord.Session, Arguments) error { return io.ErrUnexpectedEOF }
+			resolver := func(context.Context, session.Session, Arguments) error { return io.ErrUnexpectedEOF }
 			command.AddResolver(resolver)
 			g.Assert(command.resolver(nil, nil, nil)).Eql(io.ErrUnexpectedEOF)
 		})
@@ -164,7 +164,7 @@ func TestCommand(t *testing.T) {
 				resolver:   nil,
 			}
 
-			resolver := func(context.Context, discord.Session, Arguments) error { return io.ErrUnexpectedEOF }
+			resolver := func(context.Context, session.Session, Arguments) error { return io.ErrUnexpectedEOF }
 			command.
 				AddInt("count").
 				AddString("name").
@@ -213,7 +213,7 @@ func TestCommand__execute(t *testing.T) {
 						tpe:  parameterTypeRest,
 					},
 				},
-				resolver: func(context.Context, discord.Session, Arguments) error {
+				resolver: func(context.Context, session.Session, Arguments) error {
 					return errors.New("1 - ImBagheera - Fontaine Pépinière")
 				},
 			}
@@ -248,7 +248,7 @@ func TestCommand__execute(t *testing.T) {
 						tpe:  parameterTypeInt,
 					},
 				},
-				resolver: func(context.Context, discord.Session, Arguments) error {
+				resolver: func(context.Context, session.Session, Arguments) error {
 					return io.ErrUnexpectedEOF
 				},
 			}

@@ -14,9 +14,25 @@
 
 package discord
 
-type ContextKey string
-
-const (
-	// ContextMessageKey is the context key for message
-	ContextMessageKey ContextKey = "message"
+import (
+	"github.com/jonathanarnault/cgear-go/go/discord/command"
+	"github.com/jonathanarnault/cgear-go/go/discord/reaction"
 )
+
+type Dispatcher interface {
+
+	// AddCommand registers a command for the dispatcher
+	AddCommand(cmd command.Command)
+
+	// AddReaction registers a reaction for the dispatcher
+	AddReaction(cmd reaction.Reaction)
+
+	// ListenCommands listen for commands
+	ListenCommands()
+
+	// ListenCommands listen for reactions
+	ListenReactions()
+
+	// Close dispatcher
+	Close()
+}
