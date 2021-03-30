@@ -29,10 +29,10 @@ func TestDispatcher__AddCommand(t *testing.T) {
 	g := goblin.Goblin(t)
 	g.Describe("dispatcher.AddCommand", func() {
 		g.It("Should create a command with the given name", func() {
-			dispatcher := &dispatcher{commands: make(map[string]Command)}
+			dispatcher := &dispatcher{commands: make(map[string]CommandBuilder)}
 
 			hello := dispatcher.AddCommand("hello")
-			cmd, ok := hello.(*command)
+			cmd, ok := hello.(*commandBuilder)
 			g.Assert(ok).IsTrue()
 			g.Assert(cmd.parameters).IsNotNil()
 			g.Assert(cap(cmd.parameters)).Eql(8)
@@ -40,8 +40,8 @@ func TestDispatcher__AddCommand(t *testing.T) {
 		})
 
 		g.It("Should return existing command if name is already taken", func() {
-			command := NewMockCommand(ctrl)
-			dispatcher := &dispatcher{commands: map[string]Command{
+			command := NewMockCommandBuilder(ctrl)
+			dispatcher := &dispatcher{commands: map[string]CommandBuilder{
 				"hello": command,
 			}}
 
@@ -55,9 +55,9 @@ func TestDispatcher__Execute(t *testing.T) {
 	g := goblin.Goblin(t)
 	g.Describe("dispatcher.AddCommand", func() {
 		g.It("Should execute the command with the given name", func() {
-			command := NewMockCommand(ctrl)
+			command := NewMockCommandBuilder(ctrl)
 			dispatcher := &dispatcher{
-				commands: map[string]Command{
+				commands: map[string]CommandBuilder{
 					"hello": command,
 				},
 				session: nil,
@@ -72,9 +72,9 @@ func TestDispatcher__Execute(t *testing.T) {
 		})
 
 		g.It("Return an error if a parameter is not valid", func() {
-			command := NewMockCommand(ctrl)
+			command := NewMockCommandBuilder(ctrl)
 			dispatcher := &dispatcher{
-				commands: map[string]Command{
+				commands: map[string]CommandBuilder{
 					"hello": command,
 				},
 				session: nil,
@@ -89,9 +89,9 @@ func TestDispatcher__Execute(t *testing.T) {
 		})
 
 		g.It("Return an error if execution fails", func() {
-			command := NewMockCommand(ctrl)
+			command := NewMockCommandBuilder(ctrl)
 			dispatcher := &dispatcher{
-				commands: map[string]Command{
+				commands: map[string]CommandBuilder{
 					"hello": command,
 				},
 				session: nil,
@@ -107,8 +107,8 @@ func TestDispatcher__Execute(t *testing.T) {
 		})
 
 		g.It("Return an error if no command is provided", func() {
-			command := NewMockCommand(ctrl)
-			dispatcher := &dispatcher{commands: map[string]Command{
+			command := NewMockCommandBuilder(ctrl)
+			dispatcher := &dispatcher{commands: map[string]CommandBuilder{
 				"hello": command,
 			}}
 
@@ -116,8 +116,8 @@ func TestDispatcher__Execute(t *testing.T) {
 		})
 
 		g.It("Return an error if command does not exist", func() {
-			command := NewMockCommand(ctrl)
-			dispatcher := &dispatcher{commands: map[string]Command{
+			command := NewMockCommandBuilder(ctrl)
+			dispatcher := &dispatcher{commands: map[string]CommandBuilder{
 				"hello": command,
 			}}
 
