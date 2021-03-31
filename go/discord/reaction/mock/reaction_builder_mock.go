@@ -48,30 +48,44 @@ func (mr *MockReactionBuilderMockRecorder) AddFilter(arg0 interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddFilter", reflect.TypeOf((*MockReactionBuilder)(nil).AddFilter), arg0)
 }
 
-// OnReactionAdded mocks base method.
-func (m *MockReactionBuilder) OnReactionAdded(arg0 reaction.ReactionFn) reaction.ReactionBuilder {
+// Build mocks base method.
+func (m *MockReactionBuilder) Build() reaction.Reaction {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OnReactionAdded", arg0)
+	ret := m.ctrl.Call(m, "Build")
+	ret0, _ := ret[0].(reaction.Reaction)
+	return ret0
+}
+
+// Build indicates an expected call of Build.
+func (mr *MockReactionBuilderMockRecorder) Build() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockReactionBuilder)(nil).Build))
+}
+
+// OnAdded mocks base method.
+func (m *MockReactionBuilder) OnAdded(arg0 reaction.ReactionFn) reaction.ReactionBuilder {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OnAdded", arg0)
 	ret0, _ := ret[0].(reaction.ReactionBuilder)
 	return ret0
 }
 
-// OnReactionAdded indicates an expected call of OnReactionAdded.
-func (mr *MockReactionBuilderMockRecorder) OnReactionAdded(arg0 interface{}) *gomock.Call {
+// OnAdded indicates an expected call of OnAdded.
+func (mr *MockReactionBuilderMockRecorder) OnAdded(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnReactionAdded", reflect.TypeOf((*MockReactionBuilder)(nil).OnReactionAdded), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnAdded", reflect.TypeOf((*MockReactionBuilder)(nil).OnAdded), arg0)
 }
 
-// OnReactionRemoved mocks base method.
-func (m *MockReactionBuilder) OnReactionRemoved(arg0 reaction.ReactionFn) reaction.ReactionBuilder {
+// OnRemoved mocks base method.
+func (m *MockReactionBuilder) OnRemoved(arg0 reaction.ReactionFn) reaction.ReactionBuilder {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "OnReactionRemoved", arg0)
+	ret := m.ctrl.Call(m, "OnRemoved", arg0)
 	ret0, _ := ret[0].(reaction.ReactionBuilder)
 	return ret0
 }
 
-// OnReactionRemoved indicates an expected call of OnReactionRemoved.
-func (mr *MockReactionBuilderMockRecorder) OnReactionRemoved(arg0 interface{}) *gomock.Call {
+// OnRemoved indicates an expected call of OnRemoved.
+func (mr *MockReactionBuilderMockRecorder) OnRemoved(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnReactionRemoved", reflect.TypeOf((*MockReactionBuilder)(nil).OnReactionRemoved), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnRemoved", reflect.TypeOf((*MockReactionBuilder)(nil).OnRemoved), arg0)
 }
