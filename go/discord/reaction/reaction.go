@@ -25,10 +25,10 @@ type Reaction interface {
 	Emoji() (emoji string)
 
 	// Added executes the added callback
-	Added(discord client.Client) (err error)
+	Added(discord client.Client, event Event) (err error)
 
 	// Removed executes the removed callback
-	Removed(discord client.Client) (err error)
+	Removed(discord client.Client, event Event) (err error)
 }
 
 // reaction is an implmentation of `Reaction`
@@ -47,16 +47,30 @@ type reaction struct {
 	onRemoved ReactionFn
 }
 
+func (r reaction) execute(discord client.Client, event Event, callback ReactionFn) error {
+	for _, filter := range r.filters {
+		skip, err := filter(event)
+		if err != nil {
+			return err
+		}
+
+		if skip {
+			return nil
+		}
+	}
+	return callback(discord, event)
+}
+
 func (r reaction) Emoji() string {
-	return ""
+	return r.emoji
 }
 
 // Added executes the added callback
-func (r reaction) Added(discord client.Client) error {
-	return nil
+func (r reaction) Added(discord client.Client, event Event) error {
+	return r.execute(discord, event, r.onAdded)
 }
 
 // Removed executes the removed callback
-func (r reaction) Removed(discord client.Client) error {
-	return nil
+func (r reaction) Removed(discord client.Client, event Event) error {
+	return r.execute(discord, event, r.onRemoved)
 }
