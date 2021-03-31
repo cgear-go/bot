@@ -15,7 +15,11 @@
 //go:generate mockgen -destination mock/reaction_builder_mock.go -package mock . ReactionBuilder
 package reaction
 
-type FilterFn func(reaction *Reaction) (skip bool, err error)
+import "github.com/jonathanarnault/cgear-go/go/discord/client"
+
+type FilterFn func(event Event) (skip bool, err error)
+
+type ReactionFn func(discord client.Client, event Event) (err error)
 
 // ReactionBuilder allows to build Reactions handlers
 type ReactionBuilder interface {
@@ -23,27 +27,29 @@ type ReactionBuilder interface {
 	// AddFilter adds a filter for the ReactionBuilder
 	AddFilter(filter FilterFn) (builder ReactionBuilder)
 
-	// OnReactionAdded is executed when a reaction is added to a message
-	OnReactionAdded(callback ReactionFn) (builder ReactionBuilder)
+	// OnAdded is executed when a reaction is added to a message
+	OnAdded(callback ReactionFn) (builder ReactionBuilder)
 
-	// OnReactionRemoved is executed when a reaction is removed from a message
-	OnReactionRemoved(callback ReactionFn) (builder ReactionBuilder)
+	// OnRemoved is executed when a reaction is removed from a message
+	OnRemoved(callback ReactionFn) (builder ReactionBuilder)
+
+	Build() (reaction Reaction)
 }
 
 // reactionBuilder is an implmentation of `ReactionBuilder`
 type reactionBuilder struct {
 
-	// reactions holds the supported reactions
-	reactions []string
+	// emoji holds the supported emoji
+	emoji string
 
 	// filters holds the filters to apply to the reaction
 	filters []FilterFn
 
-	// reactionAdded holds the callback function when a reaction is added
-	reactionAdded ReactionFn
+	// onAdded holds the callback function when a reaction is added
+	onAdded ReactionFn
 
 	// reactionAdded holds the callback function when a reaction is removed
-	reactionRemoved ReactionFn
+	onRemoved ReactionFn
 }
 
 func (r *reactionBuilder) AddFilter(filter FilterFn) ReactionBuilder {
@@ -51,12 +57,32 @@ func (r *reactionBuilder) AddFilter(filter FilterFn) ReactionBuilder {
 	return r
 }
 
-func (r *reactionBuilder) OnReactionAdded(callback ReactionFn) ReactionBuilder {
-	r.reactionAdded = callback
+func (r *reactionBuilder) OnAdded(callback ReactionFn) ReactionBuilder {
+	r.onAdded = callback
 	return r
 }
 
-func (r *reactionBuilder) OnReactionRemoved(callback ReactionFn) ReactionBuilder {
-	r.reactionRemoved = callback
+func (r *reactionBuilder) OnRemoved(callback ReactionFn) ReactionBuilder {
+	r.onRemoved = callback
 	return r
+}
+
+func (r *reactionBuilder) Build() Reaction {
+	reaction := reaction{
+		emoji:     r.emoji,
+		filters:   make([]FilterFn, len(r.filters)),
+		onAdded:   r.onAdded,
+		onRemoved: r.onRemoved,
+	}
+	copy(reaction.filters, r.filters[:])
+	return reaction
+}
+
+func NewReactionBuilder(emoji string) ReactionBuilder {
+	return &reactionBuilder{
+		emoji:     emoji,
+		filters:   make([]FilterFn, 0),
+		onAdded:   nil,
+		onRemoved: nil,
+	}
 }

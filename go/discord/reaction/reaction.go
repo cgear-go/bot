@@ -14,29 +14,49 @@
 
 package reaction
 
-import "github.com/jonathanarnault/cgear-go/go/discord/session"
+import (
+	"github.com/jonathanarnault/cgear-go/go/discord/client"
+)
 
 // Reaction represents a reaction on a message
-type Reaction struct {
+type Reaction interface {
 
-	// UserID is the user that performed the action
-	UserID string
+	// Emoji returns the reaction emoji
+	Emoji() (emoji string)
 
-	// UserPermission holds the user permission
-	UserPermissions int64
+	// Added executes the added callback
+	Added(discord client.Client) (err error)
 
-	// GuildID is the guild where the action was performed
-	GuildID string
-
-	// ChannelID is the channel where the action was performed
-	ChannelID string
-
-	// MessageID holds the message where the action was performed
-	MessageID string
-
-	// EmojiID holds the reaction emoji ID
-	EmojiID string
+	// Removed executes the removed callback
+	Removed(discord client.Client) (err error)
 }
 
-// ReactionFn is the callback used to listen for reactions events
-type ReactionFn func(session session.Session, reaction *Reaction) (err error)
+// reaction is an implmentation of `Reaction`
+type reaction struct {
+
+	// emoji holds the supported emoji
+	emoji string
+
+	// filters holds the filters to apply to the reaction
+	filters []FilterFn
+
+	// onAdded holds the callback function when a reaction is added
+	onAdded ReactionFn
+
+	// reactionAdded holds the callback function when a reaction is removed
+	onRemoved ReactionFn
+}
+
+func (r reaction) Emoji() string {
+	return ""
+}
+
+// Added executes the added callback
+func (r reaction) Added(discord client.Client) error {
+	return nil
+}
+
+// Removed executes the removed callback
+func (r reaction) Removed(discord client.Client) error {
+	return nil
+}
