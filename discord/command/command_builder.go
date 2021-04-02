@@ -15,8 +15,6 @@
 package command
 
 import (
-	"context"
-
 	"github.com/cgear-go/bot/discord/client"
 )
 
@@ -24,7 +22,7 @@ import (
 type FilterFn func(event Event) (skip bool, err error)
 
 // CommandFn is the resolver function for a command
-type CommandFn func(context.Context, client.Client, Arguments) error
+type CommandFn func(client client.Client, event Event, arguments Arguments) error
 
 // CommandBuilder allows to build commands
 type CommandBuilder interface {

@@ -12,6 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
+//go:generate mockgen -destination ../clientmock/client.go -package clientmock . Client
 package client
 
 // Client is an interface for Discord API

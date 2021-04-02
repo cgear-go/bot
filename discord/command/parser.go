@@ -12,7 +12,6 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-//go:generate mockgen -destination ../commandmock/parser.go -package commandmock . Parser
 package command
 
 import (

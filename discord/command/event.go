@@ -30,4 +30,7 @@ type Event struct {
 
 	// MessageID holds the message where the command was performed
 	MessageID string
+
+	// 	Params holds the command params a string that was executed
+	Params string
 }
