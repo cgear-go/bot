@@ -20,9 +20,9 @@ import (
 	"io"
 	"testing"
 
+	"github.com/cgear-go/bot/discord/session"
 	"github.com/franela/goblin"
 	"github.com/golang/mock/gomock"
-	"github.com/jonathanarnault/cgear-go/go/discord/session"
 )
 
 func TestCommand__AddInt(t *testing.T) {

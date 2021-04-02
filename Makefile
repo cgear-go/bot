@@ -25,7 +25,7 @@ define docker_build
 		--rm \
 		--label "project=cgear-go" \
 		--build-arg "VERSION=$(VERSION)" \
-		--tag  github.com/jonathanarnault/cgear-go/$(1):$(VERSION) \
+		--tag  github.com/cgear-go/bot/$(1):$(VERSION) \
 		--file docker/$(1)/Dockerfile . > /dev/null
 endef
 
@@ -34,7 +34,7 @@ all: run
 .PHONY: containers run test
 
 run:
-	@$(GO) run ./go/bot
+	@$(GO) run ./bot
 
 containers: test
 	$(call docker_build,cgear-go-bot)

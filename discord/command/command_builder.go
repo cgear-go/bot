@@ -18,7 +18,7 @@ package command
 import (
 	"context"
 
-	"github.com/jonathanarnault/cgear-go/go/discord/session"
+	"github.com/cgear-go/bot/discord/session"
 )
 
 // FilterFn is a function used to filter commands

@@ -32,13 +32,13 @@ RUN adduser \
 
 WORKDIR /tmp/cgear-go
 
-ADD go      go
-ADD go.mod  go.mod
-ADD go.sum  go.sum
+ADD discord     discord
+ADD go.mod      go.mod
+ADD go.sum      go.sum
 
 RUN go mod download
 RUN go mod verify
-RUN go build -o /tmp/cgear-go-bot ./go/bot
+RUN go build -o /tmp/cgear-go-bot ./bot
 
 # Runtime
 FROM scratch
@@ -46,9 +46,9 @@ FROM scratch
 ENV DISCORD_TOKEN=""
 
 # Runtime dependencies
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /etc/passwd /etc/passwd
-COPY --from=builder /etc/group /etc/group
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt  /etc/ssl/certs/
+COPY --from=builder /etc/passwd                         /etc/passwd
+COPY --from=builder /etc/group                          /etc/group
 
 # Binary
 COPY --from=builder /tmp/cgear-go-bot /app/cgear-go-bot
