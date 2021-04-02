@@ -16,13 +16,11 @@ package command
 
 import (
 	"context"
-	"errors"
 	"io"
 	"testing"
 
 	"github.com/cgear-go/bot/discord/session"
 	"github.com/franela/goblin"
-	"github.com/golang/mock/gomock"
 )
 
 func TestCommand__AddInt(t *testing.T) {
@@ -30,7 +28,9 @@ func TestCommand__AddInt(t *testing.T) {
 	g.Describe("command.AddInt", func() {
 		g.It("Should append int parameter with the given name to the command parameters", func() {
 			command := &commandBuilder{
+				name:       "test",
 				parameters: make([]parameter, 0, 1),
+				filters:    make([]FilterFn, 0, 1),
 				resolver:   nil,
 			}
 
@@ -38,12 +38,14 @@ func TestCommand__AddInt(t *testing.T) {
 			g.Assert(len(command.parameters)).Eql(1)
 			g.Assert(len(command.parameters)).Eql(1)
 			g.Assert(command.parameters[0].name).Eql("count")
-			g.Assert(command.parameters[0].tpe).Eql(parameterTypeInt)
+			g.Assert(command.parameters[0].parameterType).Eql(parameterTypeInt)
 		})
 
 		g.It("Should return self", func() {
 			command := &commandBuilder{
+				name:       "test",
 				parameters: make([]parameter, 0, 1),
+				filters:    make([]FilterFn, 0, 1),
 				resolver:   nil,
 			}
 
@@ -57,7 +59,9 @@ func TestCommand__AddString(t *testing.T) {
 	g.Describe("command.AddString", func() {
 		g.It("Should append string parameter with the given name to the command parameters", func() {
 			command := &commandBuilder{
+				name:       "test",
 				parameters: make([]parameter, 0, 1),
+				filters:    make([]FilterFn, 0, 1),
 				resolver:   nil,
 			}
 
@@ -65,12 +69,14 @@ func TestCommand__AddString(t *testing.T) {
 			g.Assert(len(command.parameters)).Eql(1)
 			g.Assert(len(command.parameters)).Eql(1)
 			g.Assert(command.parameters[0].name).Eql("name")
-			g.Assert(command.parameters[0].tpe).Eql(parameterTypeString)
+			g.Assert(command.parameters[0].parameterType).Eql(parameterTypeString)
 		})
 
 		g.It("Should return self", func() {
 			command := &commandBuilder{
+				name:       "test",
 				parameters: make([]parameter, 0, 1),
+				filters:    make([]FilterFn, 0, 1),
 				resolver:   nil,
 			}
 
@@ -84,7 +90,9 @@ func TestCommand__AddRest(t *testing.T) {
 	g.Describe("command.AddRest", func() {
 		g.It("Should append string parameter with the given name to the command parameters", func() {
 			command := &commandBuilder{
+				name:       "test",
 				parameters: make([]parameter, 0, 1),
+				filters:    make([]FilterFn, 0, 1),
 				resolver:   nil,
 			}
 
@@ -92,12 +100,14 @@ func TestCommand__AddRest(t *testing.T) {
 			g.Assert(len(command.parameters)).Eql(1)
 			g.Assert(len(command.parameters)).Eql(1)
 			g.Assert(command.parameters[0].name).Eql("gym")
-			g.Assert(command.parameters[0].tpe).Eql(parameterTypeRest)
+			g.Assert(command.parameters[0].parameterType).Eql(parameterTypeRest)
 		})
 
 		g.It("Should return self", func() {
 			command := &commandBuilder{
+				name:       "test",
 				parameters: make([]parameter, 0, 1),
+				filters:    make([]FilterFn, 0, 1),
 				resolver:   nil,
 			}
 
@@ -111,27 +121,30 @@ func TestCommandBuilder__AddFilter(t *testing.T) {
 	g.Describe("commandBuilder.AddFilter", func() {
 		g.It("Should add filter to commandBuilder", func() {
 			builder := &commandBuilder{
-				filters: make([]FilterFn, 0, 1),
+				name:       "test",
+				parameters: make([]parameter, 0, 1),
+				filters:    make([]FilterFn, 0, 1),
+				resolver:   nil,
 			}
 
-			builder.AddFilter(func(*CommandEvent) (bool, error) {
+			builder.AddFilter(func(Event) (bool, error) {
 				return false, io.EOF
 			})
 
-			builder.AddFilter(func(*CommandEvent) (bool, error) {
+			builder.AddFilter(func(Event) (bool, error) {
 				return true, nil
 			})
 
 			g.Assert(len(builder.filters)).Eql(2)
 
 			{
-				skip, err := builder.filters[0](nil)
+				skip, err := builder.filters[0](Event{})
 				g.Assert(skip).Eql(false)
 				g.Assert(err).Eql(io.EOF)
 			}
 
 			{
-				skip, err := builder.filters[1](nil)
+				skip, err := builder.filters[1](Event{})
 				g.Assert(skip).Eql(true)
 				g.Assert(err).Eql(nil)
 			}
@@ -139,17 +152,19 @@ func TestCommandBuilder__AddFilter(t *testing.T) {
 	})
 }
 
-func TestCommand__AddResolver(t *testing.T) {
+func TestCommand__Resolver(t *testing.T) {
 	g := goblin.Goblin(t)
-	g.Describe("command.AddResolver", func() {
+	g.Describe("command.Resolver", func() {
 		g.It("Should set command resolver", func() {
 			command := &commandBuilder{
+				name:       "test",
 				parameters: make([]parameter, 0, 1),
+				filters:    make([]FilterFn, 0, 1),
 				resolver:   nil,
 			}
 
 			resolver := func(context.Context, session.Session, Arguments) error { return io.ErrUnexpectedEOF }
-			command.AddResolver(resolver)
+			command.Resolver(resolver)
 			g.Assert(command.resolver(nil, nil, nil)).Eql(io.ErrUnexpectedEOF)
 		})
 	})
@@ -160,7 +175,9 @@ func TestCommand(t *testing.T) {
 	g.Describe("command", func() {
 		g.It("Should support chaining", func() {
 			command := &commandBuilder{
+				name:       "test",
 				parameters: make([]parameter, 0, 1),
+				filters:    make([]FilterFn, 0, 1),
 				resolver:   nil,
 			}
 
@@ -169,95 +186,16 @@ func TestCommand(t *testing.T) {
 				AddInt("count").
 				AddString("name").
 				AddRest("gym").
-				AddResolver(resolver)
+				Resolver(resolver)
 			g.Assert(len(command.parameters)).Eql(3)
 			g.Assert(len(command.parameters)).Eql(3)
 			g.Assert(command.parameters[0].name).Eql("count")
-			g.Assert(command.parameters[0].tpe).Eql(parameterTypeInt)
+			g.Assert(command.parameters[0].parameterType).Eql(parameterTypeInt)
 			g.Assert(command.parameters[1].name).Eql("name")
-			g.Assert(command.parameters[1].tpe).Eql(parameterTypeString)
+			g.Assert(command.parameters[1].parameterType).Eql(parameterTypeString)
 			g.Assert(command.parameters[2].name).Eql("gym")
-			g.Assert(command.parameters[2].tpe).Eql(parameterTypeRest)
+			g.Assert(command.parameters[2].parameterType).Eql(parameterTypeRest)
 			g.Assert(command.resolver(nil, nil, nil)).Eql(io.ErrUnexpectedEOF)
-		})
-	})
-}
-func TestCommand__execute(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	g := goblin.Goblin(t)
-	g.Describe("command.AddRest", func() {
-		g.It("Should execute command", func() {
-			parser := NewMockParser(ctrl)
-			parser.EXPECT().
-				ReadInt().
-				Return(1, nil)
-			parser.EXPECT().
-				ReadString().
-				Return("ImBagheera", nil)
-			parser.EXPECT().
-				ReadRest().
-				Return("Fontaine Pépinière", nil)
-
-			command := &commandBuilder{
-				parameters: []parameter{
-					{
-						name: "count",
-						tpe:  parameterTypeInt,
-					},
-					{
-						name: "name",
-						tpe:  parameterTypeString,
-					},
-					{
-						name: "gym",
-						tpe:  parameterTypeRest,
-					},
-				},
-				resolver: func(context.Context, session.Session, Arguments) error {
-					return errors.New("1 - ImBagheera - Fontaine Pépinière")
-				},
-			}
-
-			err := command.execute(context.Background(), nil, parser)
-			g.Assert(err.Error()).Eql("1 - ImBagheera - Fontaine Pépinière")
-		})
-
-		g.It("Should return an error if argument parsing fails", func() {
-			command := &commandBuilder{
-				parameters: []parameter{
-					{
-						name: "count",
-						tpe:  parameterTypeInt,
-					},
-				},
-				resolver: nil,
-			}
-			parser := NewMockParser(ctrl)
-			parser.EXPECT().
-				ReadInt().
-				Return(0, io.EOF)
-
-			g.Assert(command.execute(context.Background(), nil, parser)).Eql(io.EOF)
-		})
-
-		g.It("Should return an error if command fails", func() {
-			command := &commandBuilder{
-				parameters: []parameter{
-					{
-						name: "count",
-						tpe:  parameterTypeInt,
-					},
-				},
-				resolver: func(context.Context, session.Session, Arguments) error {
-					return io.ErrUnexpectedEOF
-				},
-			}
-			parser := NewMockParser(ctrl)
-			parser.EXPECT().
-				ReadInt().
-				Return(1, nil)
-
-			g.Assert(command.execute(context.Background(), nil, parser)).Eql(io.ErrUnexpectedEOF)
 		})
 	})
 }

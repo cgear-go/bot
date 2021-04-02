@@ -34,6 +34,6 @@ type parameter struct {
 	// name holds the parameter name
 	name string
 
-	// t holds the parameter type
-	tpe parameterType
+	// parameterType holds the parameter type
+	parameterType parameterType
 }

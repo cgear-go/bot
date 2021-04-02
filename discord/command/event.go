@@ -14,7 +14,7 @@
 
 package command
 
-type CommandEvent struct {
+type Event struct {
 
 	// UserID is the user that performed the command
 	UserID string

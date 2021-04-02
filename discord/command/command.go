@@ -17,6 +17,9 @@ package command
 // Command represents a command
 type Command interface {
 
+	// Name returns the command name
+	Name() (name string)
+
 	// Execute the command
 	Execute(command string)
 }
