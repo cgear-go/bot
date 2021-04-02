@@ -17,8 +17,11 @@ package discord
 import (
 	"errors"
 	"fmt"
+	"log"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/cgear-go/bot/discord/client"
 	"github.com/cgear-go/bot/discord/command"
 	"github.com/cgear-go/bot/discord/reaction"
 )
@@ -40,6 +43,12 @@ type Dispatcher interface {
 
 // dispatcher is an implmentation of `Dispatcher`
 type dispatcher struct {
+	// session holds discord connection
+	session *discordgo.Session
+
+	// client holds the client wrapper around discord session
+	client client.Client
+
 	// commands
 	commands map[string]command.Command
 
@@ -60,8 +69,70 @@ func (d *dispatcher) AddReaction(reaction reaction.Reaction) Dispatcher {
 	return d
 }
 
-func (d *dispatcher) Listen() {
+func (d *dispatcher) commandEndIndex(content string) int {
+	wsIndex := strings.Index(content, " ")
+	crIndex := strings.Index(content, "\n")
+	if wsIndex == -1 {
+		wsIndex = len(content)
+	}
 
+	if crIndex == -1 {
+		crIndex = len(content)
+	}
+
+	if wsIndex < crIndex {
+		return wsIndex
+	}
+	return crIndex
+}
+
+func (d *dispatcher) executeCommand(message *discordgo.MessageCreate, content string) error {
+	defer d.client.ChannelMessageDelete(message.ChannelID, message.ID)
+
+	index := d.commandEndIndex(content)
+	if index == 0 {
+		return nil
+	}
+
+	cmd, ok := d.commands[strings.TrimSpace(content[:index])]
+	if !ok {
+		return nil
+	}
+
+	permissions, err := d.client.UserChannelPermissions(message.Author.ID, message.ChannelID)
+	if err != nil {
+		return err
+	}
+
+	return cmd.Execute(d.client, command.Event{
+		GuildID:         message.GuildID,
+		UserID:          message.Author.ID,
+		UserPermissions: permissions,
+		ChannelID:       message.ChannelID,
+		MessageID:       message.ID,
+		Params:          strings.TrimSpace(content[index:]),
+	})
+}
+
+func (d *dispatcher) Listen() {
+	d.closers = append(d.closers, d.session.AddHandler(func(session *discordgo.Session, message *discordgo.MessageCreate) {
+		if message.Author.ID == session.State.User.ID {
+			return
+		}
+
+		content := strings.TrimSpace(message.Content)
+		if len(content) == 0 {
+			return
+		}
+
+		if content[0] != '+' {
+			return
+		}
+
+		if err := d.executeCommand(message, content[1:]); err != nil {
+			log.Printf("Failed to execute command (%s): %v", content, err)
+		}
+	}))
 }
 
 func (d *dispatcher) Close() {
@@ -85,6 +156,8 @@ func NewDispatcher(token string) (Dispatcher, error) {
 	}
 
 	return &dispatcher{
+		session:   connection,
+		client:    &clientImpl{session: connection},
 		commands:  make(map[string]command.Command),
 		reactions: make(map[string]reaction.Reaction),
 		closers:   make([]func(), 0, 3),
