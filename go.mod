@@ -1,4 +1,4 @@
-module github.com/jonathanarnault/cgear-go
+module github.com/cgear-go/bot
 
 go 1.16
 

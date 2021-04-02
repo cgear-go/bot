@@ -15,7 +15,7 @@
 //go:generate mockgen -destination mock/reaction_builder_mock.go -package mock . ReactionBuilder
 package reaction
 
-import "github.com/jonathanarnault/cgear-go/go/discord/client"
+import "github.com/cgear-go/bot/discord/client"
 
 type FilterFn func(event Event) (skip bool, err error)
 

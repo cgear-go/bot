@@ -15,7 +15,7 @@
 package reaction
 
 import (
-	"github.com/jonathanarnault/cgear-go/go/discord/client"
+	"github.com/cgear-go/bot/discord/client"
 )
 
 // Reaction represents a reaction on a message

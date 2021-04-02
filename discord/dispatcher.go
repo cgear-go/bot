@@ -12,33 +12,27 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-package raid
+package discord
 
 import (
-	"time"
+	"github.com/cgear-go/bot/discord/command"
+	"github.com/cgear-go/bot/discord/reaction"
 )
 
-// RaidInfo represents informations concerning a raid raid
-type RaidInfo struct {
+type Dispatcher interface {
 
-	// Guild is the ID of the guild where the raid will take place
-	Guild string
+	// AddCommand registers a command for the dispatcher
+	AddCommand(cmd command.Command)
 
-	// Queue is the ID of the message used to join the raid
-	Queue string
+	// AddReaction registers a reaction for the dispatcher
+	AddReaction(cmd reaction.Reaction)
 
-	// Lobby is the ID of the channel created for the raid
-	Lobby string
+	// ListenCommands listen for commands
+	ListenCommands()
 
-	// Organizer is the ID of the raid organizer
-	Organizer string
+	// ListenCommands listen for reactions
+	ListenReactions()
 
-	// Level is the raid level
-	Level string
-
-	// Gym is the name of the gym where the raid will take place
-	Gym string
-
-	// Start holds the raid launch time
-	Start time.Time
+	// Close dispatcher
+	Close()
 }

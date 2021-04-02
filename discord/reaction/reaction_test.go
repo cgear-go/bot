@@ -19,8 +19,8 @@ import (
 	"io"
 	"testing"
 
+	"github.com/cgear-go/bot/discord/client"
 	"github.com/franela/goblin"
-	"github.com/jonathanarnault/cgear-go/go/discord/client"
 )
 
 func TestReaction__Emoji(t *testing.T) {
