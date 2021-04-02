@@ -88,7 +88,15 @@ func (c *commandBuilder) Resolver(resolver CommandFn) CommandBuilder {
 }
 
 func (c *commandBuilder) Build() Command {
-	return nil
+	cmd := &command{
+		name:       c.name,
+		parameters: make([]parameter, len(c.parameters)),
+		filters:    make([]FilterFn, len(c.filters)),
+		resolver:   c.resolver,
+	}
+	copy(cmd.parameters, c.parameters[:])
+	copy(cmd.filters, c.filters[:])
+	return cmd
 }
 
 // NewCommandBuilder creates a command builder

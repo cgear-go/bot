@@ -34,7 +34,7 @@ all: run
 .PHONY: containers run test
 
 run:
-	@$(GO) run ./bot
+	@$(GO) run .
 
 containers: test
 	$(call docker_build,cgear-go-bot)
