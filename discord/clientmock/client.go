@@ -61,6 +61,20 @@ func (mr *MockClientMockRecorder) ChannelMessageDelete(arg0, arg1 interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelMessageDelete", reflect.TypeOf((*MockClient)(nil).ChannelMessageDelete), arg0, arg1)
 }
 
+// ChannelMessageEdit mocks base method.
+func (m *MockClient) ChannelMessageEdit(arg0, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelMessageEdit", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChannelMessageEdit indicates an expected call of ChannelMessageEdit.
+func (mr *MockClientMockRecorder) ChannelMessageEdit(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelMessageEdit", reflect.TypeOf((*MockClient)(nil).ChannelMessageEdit), arg0, arg1, arg2)
+}
+
 // ChannelMessageSend mocks base method.
 func (m *MockClient) ChannelMessageSend(arg0, arg1 string) (string, error) {
 	m.ctrl.T.Helper()

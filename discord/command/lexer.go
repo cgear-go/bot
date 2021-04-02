@@ -12,7 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-//go:generate mockgen -destination ../commandmock/lexer.go -package commandmock . Lexer
+//go:generate mockgen -destination ../command/lexer_mock_test.go -package command . Lexer
 package command
 
 import (

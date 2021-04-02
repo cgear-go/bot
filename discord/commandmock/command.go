@@ -7,6 +7,8 @@ package commandmock
 import (
 	reflect "reflect"
 
+	client "github.com/cgear-go/bot/discord/client"
+	command "github.com/cgear-go/bot/discord/command"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -34,15 +36,17 @@ func (m *MockCommand) EXPECT() *MockCommandMockRecorder {
 }
 
 // Execute mocks base method.
-func (m *MockCommand) Execute(arg0 string) {
+func (m *MockCommand) Execute(arg0 client.Client, arg1 command.Event) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Execute", arg0)
+	ret := m.ctrl.Call(m, "Execute", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // Execute indicates an expected call of Execute.
-func (mr *MockCommandMockRecorder) Execute(arg0 interface{}) *gomock.Call {
+func (mr *MockCommandMockRecorder) Execute(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockCommand)(nil).Execute), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockCommand)(nil).Execute), arg0, arg1)
 }
 
 // Name mocks base method.
