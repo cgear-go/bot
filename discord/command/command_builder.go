@@ -22,7 +22,7 @@ import (
 )
 
 // FilterFn is a function used to filter commands
-type FilterFn func(event *CommandEvent) (skip bool, err error)
+type FilterFn func(event Event) (skip bool, err error)
 
 // CommandFn is the resolver function for a command
 type CommandFn func(context.Context, session.Session, Arguments) error
@@ -42,15 +42,18 @@ type CommandBuilder interface {
 	// AddFilter adds a channel filter for the command
 	AddFilter(filter FilterFn) CommandBuilder
 
-	// AddResolver sets the command resolver
-	AddResolver(CommandFn)
+	// Resolver sets the command resolver
+	Resolver(CommandFn) CommandBuilder
 
-	// execute command with the provided context and parser
-	execute(context.Context, session.Session, Parser) error
+	// Build the command
+	Build() Command
 }
 
-// commandBuilder is an implementation of `Command`
+// commandBuilder is an implementation of `CommandBuilder`
 type commandBuilder struct {
+
+	// name holds the command name
+	name string
 
 	// parameters holds the command parameters
 	parameters []parameter
@@ -63,17 +66,17 @@ type commandBuilder struct {
 }
 
 func (c *commandBuilder) AddInt(name string) CommandBuilder {
-	c.parameters = append(c.parameters, parameter{name: name, tpe: parameterTypeInt})
+	c.parameters = append(c.parameters, parameter{name: name, parameterType: parameterTypeInt})
 	return c
 }
 
 func (c *commandBuilder) AddString(name string) CommandBuilder {
-	c.parameters = append(c.parameters, parameter{name: name, tpe: parameterTypeString})
+	c.parameters = append(c.parameters, parameter{name: name, parameterType: parameterTypeString})
 	return c
 }
 
 func (c *commandBuilder) AddRest(name string) CommandBuilder {
-	c.parameters = append(c.parameters, parameter{name: name, tpe: parameterTypeRest})
+	c.parameters = append(c.parameters, parameter{name: name, parameterType: parameterTypeRest})
 	return c
 }
 
@@ -82,33 +85,11 @@ func (c *commandBuilder) AddFilter(filter FilterFn) CommandBuilder {
 	return c
 }
 
-func (c *commandBuilder) AddResolver(resolver CommandFn) {
+func (c *commandBuilder) Resolver(resolver CommandFn) CommandBuilder {
 	c.resolver = resolver
+	return c
 }
 
-func (c commandBuilder) execute(ctx context.Context, session session.Session, parser Parser) error {
-	arguments := &arguments{values: make(map[string]interface{})}
-
-	for _, parameter := range c.parameters {
-		var (
-			value interface{}
-			err   error
-		)
-
-		switch parameter.tpe {
-		case parameterTypeInt:
-			value, err = parser.ReadInt()
-		case parameterTypeString:
-			value, err = parser.ReadString()
-		default:
-			value, err = parser.ReadRest()
-		}
-
-		if err != nil {
-			return err
-		}
-		arguments.values[parameter.name] = value
-	}
-
-	return c.resolver(ctx, session, arguments)
+func (c *commandBuilder) Build() Command {
+	return nil
 }
