@@ -12,20 +12,19 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-//go:generate mockgen -destination command_builder_mock_test.go -package command . CommandBuilder
 package command
 
 import (
 	"context"
 
-	"github.com/cgear-go/bot/discord/session"
+	"github.com/cgear-go/bot/discord/client"
 )
 
 // FilterFn is a function used to filter commands
 type FilterFn func(event Event) (skip bool, err error)
 
 // CommandFn is the resolver function for a command
-type CommandFn func(context.Context, session.Session, Arguments) error
+type CommandFn func(context.Context, client.Client, Arguments) error
 
 // CommandBuilder allows to build commands
 type CommandBuilder interface {
@@ -92,4 +91,14 @@ func (c *commandBuilder) Resolver(resolver CommandFn) CommandBuilder {
 
 func (c *commandBuilder) Build() Command {
 	return nil
+}
+
+// NewCommandBuilder creates a command builder
+func NewCommandBuilder(name string) CommandBuilder {
+	return &commandBuilder{
+		name:       name,
+		parameters: make([]parameter, 0, 1),
+		filters:    make([]FilterFn, 0),
+		resolver:   nil,
+	}
 }

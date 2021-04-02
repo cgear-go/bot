@@ -12,6 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
+//go:generate mockgen -destination ../commandmock/command.go -package commandmock . Command
 package command
 
 // Command represents a command
