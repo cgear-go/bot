@@ -181,20 +181,23 @@ func TestCommandBuilder__Build(t *testing.T) {
 			}
 
 			resolver := func(client.Client, Event, Arguments) error { return io.ErrUnexpectedEOF }
-			builder.
+			command := builder.
 				AddInt("count").
 				AddString("name").
 				AddRest("gym").
-				Resolver(resolver)
-			g.Assert(len(builder.parameters)).Eql(3)
-			g.Assert(len(builder.parameters)).Eql(3)
-			g.Assert(builder.parameters[0].name).Eql("count")
-			g.Assert(builder.parameters[0].parameterType).Eql(parameterTypeInt)
-			g.Assert(builder.parameters[1].name).Eql("name")
-			g.Assert(builder.parameters[1].parameterType).Eql(parameterTypeString)
-			g.Assert(builder.parameters[2].name).Eql("gym")
-			g.Assert(builder.parameters[2].parameterType).Eql(parameterTypeRest)
-			g.Assert(builder.resolver(nil, Event{}, nil)).Eql(io.ErrUnexpectedEOF)
+				Resolver(resolver).
+				Build().(*command)
+
+			g.Assert(command.name).Eql("test")
+			g.Assert(len(command.parameters)).Eql(3)
+			g.Assert(len(command.parameters)).Eql(3)
+			g.Assert(command.parameters[0].name).Eql("count")
+			g.Assert(command.parameters[0].parameterType).Eql(parameterTypeInt)
+			g.Assert(command.parameters[1].name).Eql("name")
+			g.Assert(command.parameters[1].parameterType).Eql(parameterTypeString)
+			g.Assert(command.parameters[2].name).Eql("gym")
+			g.Assert(command.parameters[2].parameterType).Eql(parameterTypeRest)
+			g.Assert(command.resolver(nil, Event{}, nil)).Eql(io.ErrUnexpectedEOF)
 		})
 	})
 }

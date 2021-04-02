@@ -33,12 +33,13 @@ RUN adduser \
 WORKDIR /tmp/cgear-go
 
 ADD discord     discord
+ADD bot.go      bot.go
 ADD go.mod      go.mod
 ADD go.sum      go.sum
 
 RUN go mod download
 RUN go mod verify
-RUN go build -o /tmp/cgear-go-bot ./bot
+RUN go build -ldflags="-w -s" -o /tmp/cgear-go-bot .
 
 # Runtime
 FROM scratch
