@@ -19,7 +19,9 @@ import (
 	"testing"
 
 	"github.com/franela/goblin"
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
+
+	"github.com/cgear-go/bot/discord/commandmock"
 )
 
 func TestParser__ReadInt(t *testing.T) {
@@ -28,7 +30,7 @@ func TestParser__ReadInt(t *testing.T) {
 
 	g.Describe("Parser.ReadInt", func() {
 		g.It("Should return an integer value when lexer returns a valid int token", func() {
-			l := NewMockLexer(mockCtrl)
+			l := commandmock.NewMockLexer(mockCtrl)
 			l.
 				EXPECT().
 				Next().
@@ -40,7 +42,7 @@ func TestParser__ReadInt(t *testing.T) {
 		})
 
 		g.It("Should return an error when lexer returns a invalid int token", func() {
-			l := NewMockLexer(mockCtrl)
+			l := commandmock.NewMockLexer(mockCtrl)
 			l.
 				EXPECT().
 				Next().
@@ -52,7 +54,7 @@ func TestParser__ReadInt(t *testing.T) {
 		})
 
 		g.It("Should return an error when lexer is done", func() {
-			l := NewMockLexer(mockCtrl)
+			l := commandmock.NewMockLexer(mockCtrl)
 			l.
 				EXPECT().
 				Next().
@@ -66,7 +68,7 @@ func TestParser__ReadInt(t *testing.T) {
 
 	g.Describe("Parser.ReadString", func() {
 		g.It("Should return a string value when lexer returns a valid string token", func() {
-			l := NewMockLexer(mockCtrl)
+			l := commandmock.NewMockLexer(mockCtrl)
 			l.
 				EXPECT().
 				Next().
@@ -78,7 +80,7 @@ func TestParser__ReadInt(t *testing.T) {
 		})
 
 		g.It("Should return an error when lexer is done", func() {
-			l := NewMockLexer(mockCtrl)
+			l := commandmock.NewMockLexer(mockCtrl)
 			l.
 				EXPECT().
 				Next().
@@ -92,7 +94,7 @@ func TestParser__ReadInt(t *testing.T) {
 
 	g.Describe("Parser.ReadRest", func() {
 		g.It("Should return a string value when lexer returns a valid string token", func() {
-			l := NewMockLexer(mockCtrl)
+			l := commandmock.NewMockLexer(mockCtrl)
 			gomock.InOrder(
 				l.EXPECT().HasNext().Return(true),
 				l.EXPECT().HasNext().Return(true),
@@ -108,7 +110,7 @@ func TestParser__ReadInt(t *testing.T) {
 		})
 
 		g.It("Should return an error when next token is an error", func() {
-			l := NewMockLexer(mockCtrl)
+			l := commandmock.NewMockLexer(mockCtrl)
 			gomock.InOrder(
 				l.EXPECT().HasNext().Return(true))
 
@@ -121,7 +123,7 @@ func TestParser__ReadInt(t *testing.T) {
 		})
 
 		g.It("Should return an error when lexer is done", func() {
-			l := NewMockLexer(mockCtrl)
+			l := commandmock.NewMockLexer(mockCtrl)
 			l.
 				EXPECT().
 				HasNext().

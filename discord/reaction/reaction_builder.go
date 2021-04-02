@@ -12,7 +12,6 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-//go:generate mockgen -destination mock/reaction_builder_mock.go -package mock . ReactionBuilder
 package reaction
 
 import "github.com/cgear-go/bot/discord/client"
