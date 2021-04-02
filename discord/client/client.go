@@ -30,6 +30,9 @@ type Client interface {
 	// ChannelMessageSend
 	ChannelMessageSend(channelID string, content string) (messageID string, err error)
 
+	// ChannelMessageEdit
+	ChannelMessageEdit(channelID string, messageID string, content string) (err error)
+
 	// ChannelMessageDelete
 	ChannelMessageDelete(channelID, messageID string) (err error)
 
