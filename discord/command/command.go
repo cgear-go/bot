@@ -15,6 +15,8 @@
 //go:generate mockgen -destination ../commandmock/command.go -package commandmock . Command
 package command
 
+import "github.com/cgear-go/bot/discord/client"
+
 // Command represents a command
 type Command interface {
 
@@ -22,5 +24,69 @@ type Command interface {
 	Name() (name string)
 
 	// Execute the command
-	Execute(command string)
+	Execute(client client.Client, event Event) (err error)
+}
+
+type command struct {
+	// name holds the command name
+	name string
+
+	// parameters holds the command parameters
+	parameters []parameter
+
+	// filters holds the command filters
+	filters []FilterFn
+
+	// resolver corresponds to the function that will be executed for the command
+	resolver CommandFn
+}
+
+func (c command) Name() (name string) {
+	return c.name
+}
+
+func (c command) Execute(client client.Client, event Event) (err error) {
+	for _, filter := range c.filters {
+		skip, err := filter(event)
+		if err != nil {
+			return err
+		}
+
+		if skip {
+			return nil
+		}
+	}
+
+	runes := []rune(event.Params)
+	parser := &parser{
+		lexer: &lexer{
+			command: runes,
+			cursor:  0,
+			length:  len(runes),
+		},
+	}
+	arguments := &arguments{values: make(map[string]interface{})}
+
+	for _, parameter := range c.parameters {
+		var (
+			value interface{}
+			err   error
+		)
+
+		switch parameter.parameterType {
+		case parameterTypeInt:
+			value, err = parser.ReadInt()
+		case parameterTypeString:
+			value, err = parser.ReadString()
+		default:
+			value, err = parser.ReadRest()
+		}
+
+		if err != nil {
+			return err
+		}
+		arguments.values[parameter.name] = value
+	}
+
+	return c.resolver(client, event, arguments)
 }

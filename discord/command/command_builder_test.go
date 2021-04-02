@@ -15,7 +15,6 @@
 package command
 
 import (
-	"context"
 	"io"
 	"testing"
 
@@ -163,9 +162,9 @@ func TestCommandBuilder__Resolver(t *testing.T) {
 				resolver:   nil,
 			}
 
-			resolver := func(context.Context, client.Client, Arguments) error { return io.ErrUnexpectedEOF }
+			resolver := func(client.Client, Event, Arguments) error { return io.ErrUnexpectedEOF }
 			builder.Resolver(resolver)
-			g.Assert(builder.resolver(nil, nil, nil)).Eql(io.ErrUnexpectedEOF)
+			g.Assert(builder.resolver(nil, Event{}, nil)).Eql(io.ErrUnexpectedEOF)
 		})
 	})
 }
@@ -181,7 +180,7 @@ func TestCommandBuilder__Build(t *testing.T) {
 				resolver:   nil,
 			}
 
-			resolver := func(context.Context, client.Client, Arguments) error { return io.ErrUnexpectedEOF }
+			resolver := func(client.Client, Event, Arguments) error { return io.ErrUnexpectedEOF }
 			builder.
 				AddInt("count").
 				AddString("name").
@@ -195,7 +194,7 @@ func TestCommandBuilder__Build(t *testing.T) {
 			g.Assert(builder.parameters[1].parameterType).Eql(parameterTypeString)
 			g.Assert(builder.parameters[2].name).Eql("gym")
 			g.Assert(builder.parameters[2].parameterType).Eql(parameterTypeRest)
-			g.Assert(builder.resolver(nil, nil, nil)).Eql(io.ErrUnexpectedEOF)
+			g.Assert(builder.resolver(nil, Event{}, nil)).Eql(io.ErrUnexpectedEOF)
 		})
 	})
 }
