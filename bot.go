@@ -21,8 +21,7 @@ import (
 	"syscall"
 
 	"github.com/cgear-go/bot/discord"
-	"github.com/cgear-go/bot/discord/client"
-	"github.com/cgear-go/bot/discord/command"
+	"github.com/cgear-go/bot/raid"
 )
 
 func main() {
@@ -36,16 +35,12 @@ func main() {
 		log.Fatalf("Failed to connect to discord: %v", err)
 	}
 
-	dispatcher.AddCommand(
-		command.NewCommandBuilder("raid").
-			AddString("level").
-			AddString("start").
-			AddString("gym").
-			Resolver(func(client client.Client, event command.Event, arguments command.Arguments) error {
-				log.Printf("%v", event)
-				return nil
-			}).
-			Build())
+	raid.CreateEngine(dispatcher, map[string]raid.Config{
+		"827454700743426069": {
+			RaidChannelID:  "827457292605325323",
+			RaidCategoryId: "827457054323114004",
+		},
+	})
 
 	dispatcher.Listen()
 	defer dispatcher.Close()
