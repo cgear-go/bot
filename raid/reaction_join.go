@@ -15,27 +15,32 @@
 package raid
 
 import (
+	"log"
+
 	"github.com/cgear-go/bot/discord"
 	"github.com/cgear-go/bot/discord/client"
-	"github.com/cgear-go/bot/discord/command"
+	"github.com/cgear-go/bot/discord/reaction"
 )
 
-func registerEndCommand(dispatcher discord.Dispatcher, engine *engine, config map[string]Config) {
-	dispatcher.AddCommand(
-		command.NewCommandBuilder("fin").
-			AddFilter(func(event command.Event) (bool, error) {
+func registerJoinReaction(dispatcher discord.Dispatcher, engine *engine, config map[string]Config) {
+	dispatcher.AddReaction(
+		reaction.NewReactionBuilder("🙏").
+			AddFilter(func(event reaction.Event) (bool, error) {
 				engine.lock.Lock()
 				defer engine.lock.Unlock()
 
-				lobby := engine.getLobbyByChannel(event.ChannelID)
+				lobby := engine.getLobbyByMessage(event.MessageID)
 				if lobby == nil {
+					log.Println("Lobby is nil")
 					return true, nil
 				}
-				return (lobby.info.organizerID != event.UserID &&
-					(event.UserPermissions&discord.PermissionManageChannels) == 0), nil
+				return lobby.info.organizerID == event.UserID, nil
 			}).
-			Resolver(func(client client.Client, event command.Event, arguments command.Arguments) error {
-				return engine.endRaid(client, event.GuildID, event.ChannelID)
+			OnAdded(func(client client.Client, event reaction.Event) error {
+				return engine.joinRemotely(client, event.ChannelID, event.MessageID, event.UserID)
+			}).
+			OnRemoved(func(client client.Client, event reaction.Event) error {
+				return engine.leaveRemotely(client, event.ChannelID, event.MessageID, event.UserID)
 			}).
 			Build())
 }

@@ -33,6 +33,7 @@ RUN adduser \
 WORKDIR /tmp/cgear-go
 
 ADD discord     discord
+ADD raid        raid
 ADD bot.go      bot.go
 ADD go.mod      go.mod
 ADD go.sum      go.sum
