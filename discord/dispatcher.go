@@ -28,6 +28,9 @@ import (
 
 type Dispatcher interface {
 
+	// Client returns the internal Discord client
+	Client() client.Client
+
 	// AddCommand registers a command for the dispatcher
 	AddCommand(command command.Command) Dispatcher
 
@@ -57,6 +60,10 @@ type dispatcher struct {
 
 	// closers holds close functions
 	closers []func()
+}
+
+func (d *dispatcher) Client() client.Client {
+	return d.client
 }
 
 func (d *dispatcher) AddCommand(command command.Command) Dispatcher {

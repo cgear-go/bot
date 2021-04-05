@@ -28,6 +28,24 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
+func TestDispatcher__Client(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	g := goblin.Goblin(t)
+	g.Describe("dispatcher.Client", func() {
+		g.It("Should add command to commands", func() {
+			client := clientmock.NewMockClient(ctrl)
+			dispatcher := &dispatcher{
+				session:   nil,
+				client:    client,
+				commands:  make(map[string]command.Command),
+				reactions: make(map[string][]reaction.Reaction),
+				closers:   make([]func(), 0, 3),
+			}
+			g.Assert(dispatcher.Client()).Eql(client)
+		})
+	})
+}
+
 func TestDispatcher__AddCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	g := goblin.Goblin(t)
