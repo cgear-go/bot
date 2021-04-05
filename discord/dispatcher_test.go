@@ -37,7 +37,7 @@ func TestDispatcher__AddCommand(t *testing.T) {
 				session:   nil,
 				client:    nil,
 				commands:  make(map[string]command.Command),
-				reactions: make(map[string]reaction.Reaction),
+				reactions: make(map[string][]reaction.Reaction),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -62,18 +62,45 @@ func TestDispatcher__AddReaction(t *testing.T) {
 				session:   nil,
 				client:    nil,
 				commands:  make(map[string]command.Command),
-				reactions: make(map[string]reaction.Reaction),
+				reactions: make(map[string][]reaction.Reaction),
 				closers:   make([]func(), 0, 3),
 			}
 
-			reaction := reactionmock.NewMockReaction(ctrl)
-			reaction.
+			r := reactionmock.NewMockReaction(ctrl)
+			r.
 				EXPECT().
 				Emoji().
 				Return("🙏")
 
-			dispatcher.AddReaction(reaction)
-			g.Assert(dispatcher.reactions["🙏"]).Eql(reaction)
+			dispatcher.AddReaction(r)
+			g.Assert(len(dispatcher.reactions["🙏"])).Eql(1)
+			g.Assert(dispatcher.reactions["🙏"]).Eql([]reaction.Reaction{r})
+		})
+		g.It("Should add reaction to reactions", func() {
+			dispatcher := &dispatcher{
+				session:   nil,
+				client:    nil,
+				commands:  make(map[string]command.Command),
+				reactions: make(map[string][]reaction.Reaction),
+				closers:   make([]func(), 0, 3),
+			}
+
+			r1 := reactionmock.NewMockReaction(ctrl)
+			r1.
+				EXPECT().
+				Emoji().
+				Return("🙏")
+
+			r2 := reactionmock.NewMockReaction(ctrl)
+			r2.
+				EXPECT().
+				Emoji().
+				Return("🙏")
+
+			dispatcher.AddReaction(r1)
+			dispatcher.AddReaction(r2)
+			g.Assert(len(dispatcher.reactions["🙏"])).Eql(2)
+			g.Assert(dispatcher.reactions["🙏"]).Eql([]reaction.Reaction{r1, r2})
 		})
 	})
 }
@@ -86,7 +113,7 @@ func TestDispatcher__commandEndIndex(t *testing.T) {
 				session:   nil,
 				client:    nil,
 				commands:  make(map[string]command.Command),
-				reactions: make(map[string]reaction.Reaction),
+				reactions: make(map[string][]reaction.Reaction),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -98,7 +125,7 @@ func TestDispatcher__commandEndIndex(t *testing.T) {
 				session:   nil,
 				client:    nil,
 				commands:  make(map[string]command.Command),
-				reactions: make(map[string]reaction.Reaction),
+				reactions: make(map[string][]reaction.Reaction),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -111,7 +138,7 @@ a b c`)).Eql(4)
 				session:   nil,
 				client:    nil,
 				commands:  make(map[string]command.Command),
-				reactions: make(map[string]reaction.Reaction),
+				reactions: make(map[string][]reaction.Reaction),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -135,7 +162,7 @@ func TestDispatcher__executeCommand(t *testing.T) {
 				commands: map[string]command.Command{
 					"test": testCommand,
 				},
-				reactions: make(map[string]reaction.Reaction),
+				reactions: make(map[string][]reaction.Reaction),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -182,7 +209,7 @@ func TestDispatcher__executeCommand(t *testing.T) {
 				commands: map[string]command.Command{
 					"test": testCommand,
 				},
-				reactions: make(map[string]reaction.Reaction),
+				reactions: make(map[string][]reaction.Reaction),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -212,7 +239,7 @@ func TestDispatcher__executeCommand(t *testing.T) {
 				commands: map[string]command.Command{
 					"test": testCommand,
 				},
-				reactions: make(map[string]reaction.Reaction),
+				reactions: make(map[string][]reaction.Reaction),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -242,7 +269,7 @@ func TestDispatcher__executeCommand(t *testing.T) {
 				commands: map[string]command.Command{
 					"test": testCommand,
 				},
-				reactions: make(map[string]reaction.Reaction),
+				reactions: make(map[string][]reaction.Reaction),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -277,7 +304,7 @@ func TestDispatcher__executeCommand(t *testing.T) {
 				commands: map[string]command.Command{
 					"test": testCommand,
 				},
-				reactions: make(map[string]reaction.Reaction),
+				reactions: make(map[string][]reaction.Reaction),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -319,11 +346,383 @@ func TestDispatcher__executeCommand(t *testing.T) {
 }
 
 func TestDispatcher__reactionAdded(t *testing.T) {
+	ctrl := gomock.NewController(t)
 
+	g := goblin.Goblin(t)
+	g.Describe("dispatcher.reactionAdded", func() {
+		g.It("Execute Added", func() {
+			testReaction := reactionmock.NewMockReaction(ctrl)
+			client := clientmock.NewMockClient(ctrl)
+			dispatcher := &dispatcher{
+				session:  nil,
+				client:   client,
+				commands: make(map[string]command.Command),
+				reactions: map[string][]reaction.Reaction{
+					"cgeargo": {testReaction},
+				},
+				closers: make([]func(), 0, 3),
+			}
+
+			client.
+				EXPECT().
+				UserChannelPermissions("456", "78").
+				Return(int64(8), nil)
+
+			testReaction.
+				EXPECT().
+				Added(gomock.Eq(client), gomock.Eq(reaction.Event{
+					GuildID:         "123",
+					UserID:          "456",
+					UserPermissions: 8,
+					ChannelID:       "78",
+					MessageID:       "90",
+				})).
+				Return(nil)
+
+			g.Assert(dispatcher.reactionAdded(&discordgo.MessageReactionAdd{
+				MessageReaction: &discordgo.MessageReaction{
+					MessageID: "90",
+					GuildID:   "123",
+					UserID:    "456",
+					ChannelID: "78",
+					Emoji: discordgo.Emoji{
+						Name: "cgeargo",
+					},
+				},
+			})).IsNil()
+		})
+
+		g.It("Fail silently if reaction is not found", func() {
+			testReaction := reactionmock.NewMockReaction(ctrl)
+			client := clientmock.NewMockClient(ctrl)
+			dispatcher := &dispatcher{
+				session:  nil,
+				client:   client,
+				commands: make(map[string]command.Command),
+				reactions: map[string][]reaction.Reaction{
+					"cgeargo": {testReaction},
+				},
+				closers: make([]func(), 0, 3),
+			}
+
+			g.Assert(dispatcher.reactionAdded(&discordgo.MessageReactionAdd{
+				MessageReaction: &discordgo.MessageReaction{
+					MessageID: "90",
+					GuildID:   "123",
+					UserID:    "456",
+					ChannelID: "78",
+					Emoji: discordgo.Emoji{
+						Name: "unknown",
+					},
+				},
+			})).IsNil()
+		})
+
+		g.It("Return permission retrieve error", func() {
+			testReaction := reactionmock.NewMockReaction(ctrl)
+			client := clientmock.NewMockClient(ctrl)
+			dispatcher := &dispatcher{
+				session:  nil,
+				client:   client,
+				commands: make(map[string]command.Command),
+				reactions: map[string][]reaction.Reaction{
+					"cgeargo": {testReaction},
+				},
+				closers: make([]func(), 0, 3),
+			}
+
+			client.
+				EXPECT().
+				UserChannelPermissions("456", "78").
+				Return(int64(0), io.ErrClosedPipe)
+
+			g.Assert(dispatcher.reactionAdded(&discordgo.MessageReactionAdd{
+				MessageReaction: &discordgo.MessageReaction{
+					MessageID: "90",
+					GuildID:   "123",
+					UserID:    "456",
+					ChannelID: "78",
+					Emoji: discordgo.Emoji{
+						Name: "cgeargo",
+					},
+				},
+			})).Eql(io.ErrClosedPipe)
+		})
+
+		g.It("Return reaction added error", func() {
+			testReaction := reactionmock.NewMockReaction(ctrl)
+			client := clientmock.NewMockClient(ctrl)
+			dispatcher := &dispatcher{
+				session:  nil,
+				client:   client,
+				commands: make(map[string]command.Command),
+				reactions: map[string][]reaction.Reaction{
+					"cgeargo": {testReaction},
+				},
+				closers: make([]func(), 0, 3),
+			}
+
+			client.
+				EXPECT().
+				UserChannelPermissions("456", "78").
+				Return(int64(8), nil)
+
+			testReaction.
+				EXPECT().
+				Added(gomock.Eq(client), gomock.Eq(reaction.Event{
+					GuildID:         "123",
+					UserID:          "456",
+					UserPermissions: 8,
+					ChannelID:       "78",
+					MessageID:       "90",
+				})).
+				Return(io.ErrNoProgress)
+
+			g.Assert(dispatcher.reactionAdded(&discordgo.MessageReactionAdd{
+				MessageReaction: &discordgo.MessageReaction{
+					MessageID: "90",
+					GuildID:   "123",
+					UserID:    "456",
+					ChannelID: "78",
+					Emoji: discordgo.Emoji{
+						Name: "cgeargo",
+					},
+				},
+			})).Eql(io.ErrNoProgress)
+		})
+
+		g.It("Fail fast if the first reaction returns an error", func() {
+			testReaction := reactionmock.NewMockReaction(ctrl)
+			client := clientmock.NewMockClient(ctrl)
+			dispatcher := &dispatcher{
+				session:  nil,
+				client:   client,
+				commands: make(map[string]command.Command),
+				reactions: map[string][]reaction.Reaction{
+					"cgeargo": {testReaction, testReaction},
+				},
+				closers: make([]func(), 0, 3),
+			}
+
+			client.
+				EXPECT().
+				UserChannelPermissions("456", "78").
+				Return(int64(8), nil)
+
+			testReaction.
+				EXPECT().
+				Added(gomock.Eq(client), gomock.Eq(reaction.Event{
+					GuildID:         "123",
+					UserID:          "456",
+					UserPermissions: 8,
+					ChannelID:       "78",
+					MessageID:       "90",
+				})).
+				Return(io.ErrNoProgress)
+
+			g.Assert(dispatcher.reactionAdded(&discordgo.MessageReactionAdd{
+				MessageReaction: &discordgo.MessageReaction{
+					MessageID: "90",
+					GuildID:   "123",
+					UserID:    "456",
+					ChannelID: "78",
+					Emoji: discordgo.Emoji{
+						Name: "cgeargo",
+					},
+				},
+			})).Eql(io.ErrNoProgress)
+		})
+	})
 }
 
 func TestDispatcher__reactionRemoved(t *testing.T) {
+	ctrl := gomock.NewController(t)
 
+	g := goblin.Goblin(t)
+	g.Describe("dispatcher.reactionRemoved", func() {
+		g.It("Execute Removed", func() {
+			testReaction := reactionmock.NewMockReaction(ctrl)
+			client := clientmock.NewMockClient(ctrl)
+			dispatcher := &dispatcher{
+				session:  nil,
+				client:   client,
+				commands: make(map[string]command.Command),
+				reactions: map[string][]reaction.Reaction{
+					"cgeargo": {testReaction},
+				},
+				closers: make([]func(), 0, 3),
+			}
+
+			client.
+				EXPECT().
+				UserChannelPermissions("456", "78").
+				Return(int64(8), nil)
+
+			testReaction.
+				EXPECT().
+				Removed(gomock.Eq(client), gomock.Eq(reaction.Event{
+					GuildID:         "123",
+					UserID:          "456",
+					UserPermissions: 8,
+					ChannelID:       "78",
+					MessageID:       "90",
+				})).
+				Return(nil)
+
+			g.Assert(dispatcher.reactionRemoved(&discordgo.MessageReactionRemove{
+				MessageReaction: &discordgo.MessageReaction{
+					MessageID: "90",
+					GuildID:   "123",
+					UserID:    "456",
+					ChannelID: "78",
+					Emoji: discordgo.Emoji{
+						Name: "cgeargo",
+					},
+				},
+			})).IsNil()
+		})
+
+		g.It("Fail silently if reaction is not found", func() {
+			testReaction := reactionmock.NewMockReaction(ctrl)
+			client := clientmock.NewMockClient(ctrl)
+			dispatcher := &dispatcher{
+				session:  nil,
+				client:   client,
+				commands: make(map[string]command.Command),
+				reactions: map[string][]reaction.Reaction{
+					"cgeargo": {testReaction},
+				},
+				closers: make([]func(), 0, 3),
+			}
+
+			g.Assert(dispatcher.reactionRemoved(&discordgo.MessageReactionRemove{
+				MessageReaction: &discordgo.MessageReaction{
+					MessageID: "90",
+					GuildID:   "123",
+					UserID:    "456",
+					ChannelID: "78",
+					Emoji: discordgo.Emoji{
+						Name: "unknown",
+					},
+				},
+			})).IsNil()
+		})
+
+		g.It("Return permission retrieve error", func() {
+			testReaction := reactionmock.NewMockReaction(ctrl)
+			client := clientmock.NewMockClient(ctrl)
+			dispatcher := &dispatcher{
+				session:  nil,
+				client:   client,
+				commands: make(map[string]command.Command),
+				reactions: map[string][]reaction.Reaction{
+					"cgeargo": {testReaction},
+				},
+				closers: make([]func(), 0, 3),
+			}
+
+			client.
+				EXPECT().
+				UserChannelPermissions("456", "78").
+				Return(int64(0), io.ErrClosedPipe)
+
+			g.Assert(dispatcher.reactionRemoved(&discordgo.MessageReactionRemove{
+				MessageReaction: &discordgo.MessageReaction{
+					MessageID: "90",
+					GuildID:   "123",
+					UserID:    "456",
+					ChannelID: "78",
+					Emoji: discordgo.Emoji{
+						Name: "cgeargo",
+					},
+				},
+			})).Eql(io.ErrClosedPipe)
+		})
+
+		g.It("Return reaction removed error", func() {
+			testReaction := reactionmock.NewMockReaction(ctrl)
+			client := clientmock.NewMockClient(ctrl)
+			dispatcher := &dispatcher{
+				session:  nil,
+				client:   client,
+				commands: make(map[string]command.Command),
+				reactions: map[string][]reaction.Reaction{
+					"cgeargo": {testReaction},
+				},
+				closers: make([]func(), 0, 3),
+			}
+
+			client.
+				EXPECT().
+				UserChannelPermissions("456", "78").
+				Return(int64(8), nil)
+
+			testReaction.
+				EXPECT().
+				Removed(gomock.Eq(client), gomock.Eq(reaction.Event{
+					GuildID:         "123",
+					UserID:          "456",
+					UserPermissions: 8,
+					ChannelID:       "78",
+					MessageID:       "90",
+				})).
+				Return(io.ErrNoProgress)
+
+			g.Assert(dispatcher.reactionRemoved(&discordgo.MessageReactionRemove{
+				MessageReaction: &discordgo.MessageReaction{
+					MessageID: "90",
+					GuildID:   "123",
+					UserID:    "456",
+					ChannelID: "78",
+					Emoji: discordgo.Emoji{
+						Name: "cgeargo",
+					},
+				},
+			})).Eql(io.ErrNoProgress)
+		})
+
+		g.It("Fail fast if the first reaction returns an error", func() {
+			testReaction := reactionmock.NewMockReaction(ctrl)
+			client := clientmock.NewMockClient(ctrl)
+			dispatcher := &dispatcher{
+				session:  nil,
+				client:   client,
+				commands: make(map[string]command.Command),
+				reactions: map[string][]reaction.Reaction{
+					"cgeargo": {testReaction, testReaction},
+				},
+				closers: make([]func(), 0, 3),
+			}
+
+			client.
+				EXPECT().
+				UserChannelPermissions("456", "78").
+				Return(int64(8), nil)
+
+			testReaction.
+				EXPECT().
+				Removed(gomock.Eq(client), gomock.Eq(reaction.Event{
+					GuildID:         "123",
+					UserID:          "456",
+					UserPermissions: 8,
+					ChannelID:       "78",
+					MessageID:       "90",
+				})).
+				Return(io.ErrNoProgress)
+
+			g.Assert(dispatcher.reactionRemoved(&discordgo.MessageReactionRemove{
+				MessageReaction: &discordgo.MessageReaction{
+					MessageID: "90",
+					GuildID:   "123",
+					UserID:    "456",
+					ChannelID: "78",
+					Emoji: discordgo.Emoji{
+						Name: "cgeargo",
+					},
+				},
+			})).Eql(io.ErrNoProgress)
+		})
+	})
 }
 func TestNewDispatcher(t *testing.T) {
 	g := goblin.Goblin(t)
