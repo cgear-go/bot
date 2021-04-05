@@ -53,7 +53,7 @@ type dispatcher struct {
 	commands map[string]command.Command
 
 	// reactions
-	reactions map[string]reaction.Reaction
+	reactions map[string][]reaction.Reaction
 
 	// closers holds close functions
 	closers []func()
@@ -64,8 +64,12 @@ func (d *dispatcher) AddCommand(command command.Command) Dispatcher {
 	return d
 }
 
-func (d *dispatcher) AddReaction(reaction reaction.Reaction) Dispatcher {
-	d.reactions[reaction.Emoji()] = reaction
+func (d *dispatcher) AddReaction(r reaction.Reaction) Dispatcher {
+	emoji := r.Emoji()
+	if _, ok := d.reactions[emoji]; !ok {
+		d.reactions[emoji] = make([]reaction.Reaction, 0, 1)
+	}
+	d.reactions[emoji] = append(d.reactions[emoji], r)
 	return d
 }
 
@@ -114,6 +118,58 @@ func (d *dispatcher) executeCommand(message *discordgo.MessageCreate, content st
 	})
 }
 
+func (d *dispatcher) reactionAdded(added *discordgo.MessageReactionAdd) error {
+	reactions, ok := d.reactions[added.Emoji.Name]
+	if !ok {
+		return nil
+	}
+
+	permissions, err := d.client.UserChannelPermissions(added.UserID, added.ChannelID)
+	if err != nil {
+		return err
+	}
+
+	for _, r := range reactions {
+		if err := r.Added(d.client, reaction.Event{
+			GuildID:         added.GuildID,
+			UserID:          added.UserID,
+			UserPermissions: permissions,
+			ChannelID:       added.ChannelID,
+			MessageID:       added.MessageID,
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (d *dispatcher) reactionRemoved(added *discordgo.MessageReactionRemove) error {
+	reactions, ok := d.reactions[added.Emoji.Name]
+	if !ok {
+		return nil
+	}
+
+	permissions, err := d.client.UserChannelPermissions(added.UserID, added.ChannelID)
+	if err != nil {
+		return err
+	}
+
+	for _, r := range reactions {
+		if err := r.Removed(d.client, reaction.Event{
+			GuildID:         added.GuildID,
+			UserID:          added.UserID,
+			UserPermissions: permissions,
+			ChannelID:       added.ChannelID,
+			MessageID:       added.MessageID,
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (d *dispatcher) Listen() {
 	d.closers = append(d.closers, d.session.AddHandler(func(session *discordgo.Session, message *discordgo.MessageCreate) {
 		if message.Author.ID == session.State.User.ID {
@@ -131,6 +187,26 @@ func (d *dispatcher) Listen() {
 
 		if err := d.executeCommand(message, content[1:]); err != nil {
 			log.Printf("Failed to execute command (%s): %v", content, err)
+		}
+	}))
+
+	d.closers = append(d.closers, d.session.AddHandler(func(session *discordgo.Session, reaction *discordgo.MessageReactionAdd) {
+		if reaction.UserID == session.State.User.ID {
+			return
+		}
+
+		if err := d.reactionAdded(reaction); err != nil {
+			log.Printf("Failed to execute reaction added (%s): %v", reaction.Emoji.Name, err)
+		}
+	}))
+
+	d.closers = append(d.closers, d.session.AddHandler(func(session *discordgo.Session, reaction *discordgo.MessageReactionRemove) {
+		if reaction.UserID == session.State.User.ID {
+			return
+		}
+
+		if err := d.reactionRemoved(reaction); err != nil {
+			log.Printf("Failed to execute reaction removed (%s): %v", reaction.Emoji.Name, err)
 		}
 	}))
 }
@@ -159,7 +235,7 @@ func NewDispatcher(token string) (Dispatcher, error) {
 		session:   connection,
 		client:    &clientImpl{session: connection},
 		commands:  make(map[string]command.Command),
-		reactions: make(map[string]reaction.Reaction),
+		reactions: make(map[string][]reaction.Reaction),
 		closers:   make([]func(), 0, 3),
 	}, nil
 }
