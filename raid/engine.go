@@ -41,6 +41,19 @@ func (e *engine) addUser(client client.Client, channelID, userID string) error {
 		channelID, userID, discord.PermissionViewChannel, 0)
 }
 
+func (e *engine) removeUser(client client.Client, channelID, userID string) error {
+	return client.UserChannelPermissionSet(
+		channelID, userID, 0, 0)
+}
+
+func (e *engine) getLobbyByMessage(messageID string) *lobby {
+	lobby, ok := e.lobbies[messageID]
+	if !ok {
+		return nil
+	}
+	return lobby
+}
+
 func (e *engine) getLobbyByChannel(channelId string) *lobby {
 	for _, l := range e.lobbies {
 		if l.channelID == channelId {
@@ -57,6 +70,7 @@ func (e *engine) createRaid(client client.Client, info raidInfo) (err error) {
 	lobby := &lobby{
 		info:             info,
 		invitesRemaining: 5,
+		remoteAttendees:  make([]string, 0),
 	}
 
 	raidChannel := e.config[info.guildID].RaidChannelID
@@ -119,6 +133,89 @@ func (e *engine) endRaid(client client.Client, guildID, channelId string) (err e
 	return nil
 }
 
+func (e engine) isUserRemote(l *lobby, userID string) bool {
+	for _, attendee := range l.remoteAttendees {
+		if attendee == userID {
+			return true
+		}
+	}
+	return false
+}
+
+func (e engine) hasUserJoined(l *lobby, userID string) bool {
+	return e.isUserRemote(l, userID)
+}
+
+func (e engine) joinRemotely(client client.Client, channelID, messageID, userID string) (err error) {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+
+	lobby := e.getLobbyByMessage(messageID)
+	if lobby == nil {
+		return nil
+	}
+
+	if lobby.invitesRemaining == 0 {
+		return nil
+	}
+
+	if e.hasUserJoined(lobby, userID) {
+		return nil
+	}
+
+	if err := e.addUser(client, lobby.channelID, userID); err != nil {
+		return err
+	}
+
+	lobby.remoteAttendees = append(lobby.remoteAttendees, userID)
+	lobby.invitesRemaining -= 1
+
+	client.ChannelMessageEdit(channelID, messageID, lobby.formatMessage())
+	client.ChannelMessageEdit(lobby.channelID, lobby.announceID, lobby.formatAnnounce())
+	log.Printf("Player joining raid remotely (%v): %v", lobby.messageID, userID)
+	return nil
+}
+
+func (e engine) leaveRemotely(client client.Client, channelID, messageID, userID string) (err error) {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+
+	lobby := e.getLobbyByMessage(messageID)
+	if lobby == nil {
+		return nil
+	}
+
+	if !e.isUserRemote(lobby, userID) {
+		return nil
+	}
+
+	if err := e.removeUser(client, lobby.channelID, userID); err != nil {
+		return err
+	}
+
+	index := -1
+	for i, attendee := range lobby.remoteAttendees {
+		if attendee == userID {
+			index = i
+			break
+
+		}
+	}
+
+	if index > -1 {
+		lobby.remoteAttendees[index] = lobby.remoteAttendees[len(lobby.remoteAttendees)-1]
+		lobby.remoteAttendees[len(lobby.remoteAttendees)-1] = ""
+		lobby.remoteAttendees = lobby.remoteAttendees[:len(lobby.remoteAttendees)-1]
+	}
+	lobby.invitesRemaining += 1
+
+	client.ChannelMessageEdit(channelID, messageID, lobby.formatMessage())
+	client.ChannelMessageEdit(lobby.channelID, lobby.announceID, lobby.formatAnnounce())
+
+	log.Printf("Player leaving raid remotely (%v): %v", lobby.messageID, userID)
+	return nil
+}
+
 //
 func CreateEngine(dispatcher discord.Dispatcher, config map[string]Config) {
 	engine := &engine{
@@ -129,4 +226,5 @@ func CreateEngine(dispatcher discord.Dispatcher, config map[string]Config) {
 
 	registerRaidCommand(dispatcher, engine, config)
 	registerEndCommand(dispatcher, engine, config)
+	registerJoinReaction(dispatcher, engine, config)
 }

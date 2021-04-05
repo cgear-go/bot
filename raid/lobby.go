@@ -14,7 +14,10 @@
 
 package raid
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // lobby holds a raid lobby
 type lobby struct {
@@ -33,6 +36,9 @@ type lobby struct {
 
 	//
 	invitesRemaining int
+
+	// Players that join the raid remotely
+	remoteAttendees []string
 }
 
 func (l lobby) String() string {
@@ -42,6 +48,18 @@ func (l lobby) String() string {
 		l.info.start.Local().Format("15h04"),
 		l.info.organizerID,
 		l.info.gym)
+}
+
+func (l lobby) formatAttendees(attendees []string) string {
+	sb := strings.Builder{}
+
+	for _, attendee := range attendees {
+		sb.WriteString("\n- <@")
+		sb.WriteString(attendee)
+		sb.WriteString(">")
+	}
+
+	return sb.String()
 }
 
 // formatMessage
@@ -60,5 +78,15 @@ Pour participer au raid :
 
 // formatAnnounce
 func (l lobby) formatAnnounce() string {
-	return l.String()
+	return fmt.Sprintf(
+		`%s
+
+Participants :
+- <@%s>
+
+Participants invités à distance : %s
+`,
+		l.String(),
+		l.info.organizerID,
+		l.formatAttendees(l.remoteAttendees))
 }
