@@ -17,12 +17,38 @@ package raid
 // RaidList holds the list of raids
 type RaidList interface {
 
-	// FindRaidByID returns a raid using its ID
-	FindRaidByID(ID string) (raid *Raid, ok bool)
+	// FindByID returns a raid using its ID
+	FindByID(id string) (raid *Raid, ok bool)
 
-	// FindRaidByLobby returns a raid using its lobby
-	FindRaidByLobby(lobbyID string) (raid *Raid, ok bool)
+	// FindByLobby returns a raid using its lobby
+	FindByLobby(lobbyID string) (raid *Raid, ok bool)
 
-	// CreateRaid creates a raid
-	CreateRaid(ID, lobbyID, info RaidInfo) (err error)
+	// Create creates a raid
+	Create(id, lobbyID string, info RaidInfo)
+}
+
+// raidList is an implementation of `RaidList`
+type raidList struct {
+
+	// events holds the events to execute
+	events *[]event
+}
+
+func (l *raidList) FindByID(id string) (raid *Raid, ok bool) {
+	return nil, false
+}
+
+func (l *raidList) FindByLobby(lobbyID string) (raid *Raid, ok bool) {
+	return nil, false
+}
+
+func (l *raidList) Create(id, lobbyID string, info RaidInfo) {
+	*(l.events) = append(*(l.events), event{
+		eventType: eventTypeRaidCreate,
+		payload: &createRaidPayload{
+			id:      id,
+			lobbyID: lobbyID,
+			info:    info,
+		},
+	})
 }

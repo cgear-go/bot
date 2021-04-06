@@ -20,10 +20,10 @@ type eventType int
 const (
 
 	// raidCreate is the event used to create raid
-	raidCreate eventType = iota
+	eventTypeRaidCreate eventType = iota
 
 	// raidEnd is the event used to end raid
-	raidEnd
+	eventTypeRaidEnd
 )
 
 // event represents an event to execute to raid list
@@ -34,4 +34,16 @@ type event struct {
 
 	// payload is the event payload
 	payload interface{}
+}
+
+// createRaidPayload is the payload when creating raids
+type createRaidPayload struct {
+	// id is the raid ID
+	id string
+
+	// lobbyID is the raid lobby ID
+	lobbyID string
+
+	// info is the raid info
+	info RaidInfo
 }

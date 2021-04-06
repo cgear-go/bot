@@ -19,7 +19,7 @@ package client
 type Client interface {
 
 	// GuildChannelTextCreate
-	GuildChannelTextCreate(guildID, categoryID string, name string) (channelID string, err error)
+	GuildChannelTextCreate(categoryID string, name string) (channelID string, err error)
 
 	// ChannelDelete
 	ChannelDelete(channelID string) (err error)
