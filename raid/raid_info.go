@@ -33,3 +33,21 @@ type raidInfo struct {
 	// start holds the raid launch time
 	start time.Time
 }
+
+type RaidInfo struct {
+
+	// GuildID is the ID of the guild where the raid will take place
+	GuildID string
+
+	// OrganizerID is the ID of the raid organizer
+	OrganizerID string
+
+	// Level is the raid level
+	Level string
+
+	// Gym is the name of the gym where the raid will take place
+	Gym string
+
+	// Start is the raid launch time
+	Start time.Time
+}
