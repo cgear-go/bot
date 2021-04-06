@@ -36,9 +36,6 @@ type raidInfo struct {
 
 type RaidInfo struct {
 
-	// GuildID is the ID of the guild where the raid will take place
-	GuildID string
-
 	// OrganizerID is the ID of the raid organizer
 	OrganizerID string
 

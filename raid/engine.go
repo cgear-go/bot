@@ -89,7 +89,6 @@ func (e *engine) createRaid(client client.Client, info raidInfo) (err error) {
 	raidChannel := e.config[info.guildID].RaidChannelID
 
 	channel, err := client.GuildChannelTextCreate(
-		info.guildID,
 		e.config[info.guildID].RaidCategoryId,
 		fmt.Sprintf("raid-%s", info.start.Format("02-01-15h04")))
 	if err != nil {

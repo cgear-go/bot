@@ -120,18 +120,18 @@ func (mr *MockClientMockRecorder) ChannelPermissionDelete(arg0, arg1 interface{}
 }
 
 // GuildChannelTextCreate mocks base method.
-func (m *MockClient) GuildChannelTextCreate(arg0, arg1, arg2 string) (string, error) {
+func (m *MockClient) GuildChannelTextCreate(arg0, arg1 string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GuildChannelTextCreate", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "GuildChannelTextCreate", arg0, arg1)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GuildChannelTextCreate indicates an expected call of GuildChannelTextCreate.
-func (mr *MockClientMockRecorder) GuildChannelTextCreate(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) GuildChannelTextCreate(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GuildChannelTextCreate", reflect.TypeOf((*MockClient)(nil).GuildChannelTextCreate), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GuildChannelTextCreate", reflect.TypeOf((*MockClient)(nil).GuildChannelTextCreate), arg0, arg1)
 }
 
 // MessageReactionAdd mocks base method.

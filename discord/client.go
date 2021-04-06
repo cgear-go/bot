@@ -20,8 +20,14 @@ type clientImpl struct {
 	session *discordgo.Session
 }
 
-func (c clientImpl) GuildChannelTextCreate(guildID, categoryID string, name string) (channelID string, err error) {
-	channel, err := c.session.GuildChannelCreateComplex(guildID, discordgo.GuildChannelCreateData{
+func (c clientImpl) GuildChannelTextCreate(categoryID string, name string) (channelID string, err error) {
+	category, err := c.session.Channel(categoryID)
+	if err != nil {
+		return "", err
+	}
+
+	channel, err := c.session.GuildChannelCreateComplex(category.GuildID, discordgo.GuildChannelCreateData{
+		Type:     discordgo.ChannelTypeGuildText,
 		Name:     name,
 		ParentID: categoryID,
 	})
