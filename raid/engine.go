@@ -23,6 +23,19 @@ import (
 	"github.com/cgear-go/bot/discord/client"
 )
 
+// Execute fn is the function to execute in transaction
+type ExecuteFn func(raids RaidList) (err error)
+
+// RollbackFn is the function to execute if an error occurs
+type RollbackFn func(raids RaidList)
+
+// Engine is the raid engine
+type Engine interface {
+
+	// Transaction allows to perform transaction on raid list
+	Transaction(fn ExecuteFn, rollback ...RollbackFn) (err error)
+}
+
 // engine is an implementation of `Engine`
 type engine struct {
 
