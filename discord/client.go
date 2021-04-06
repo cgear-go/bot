@@ -57,6 +57,14 @@ func (c clientImpl) ChannelMessageDelete(channelID, messageID string) error {
 	return c.session.ChannelMessageDelete(channelID, messageID)
 }
 
+func (c clientImpl) ChannelGetCategory(channelID string) (categoryID string, err error) {
+	channel, err := c.session.Channel(channelID)
+	if err != nil {
+		return "", err
+	}
+	return channel.ParentID, nil
+}
+
 func (c clientImpl) UserChannelPermissionSet(channelID, targetID string, allow, deny int64) error {
 	return c.session.ChannelPermissionSet(channelID, targetID, discordgo.PermissionOverwriteTypeMember, allow, deny)
 }

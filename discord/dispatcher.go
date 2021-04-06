@@ -110,15 +110,21 @@ func (d *dispatcher) executeCommand(message *discordgo.MessageCreate, content st
 		return nil
 	}
 
+	category, err := d.client.ChannelGetCategory(message.ChannelID)
+	if err != nil {
+		return err
+	}
+
 	permissions, err := d.client.UserChannelPermissions(message.Author.ID, message.ChannelID)
 	if err != nil {
 		return err
 	}
 
 	return cmd.Execute(d.client, command.Event{
-		GuildID:         message.GuildID,
 		UserID:          message.Author.ID,
 		UserPermissions: permissions,
+		GuildID:         message.GuildID,
+		CategoryID:      category,
 		ChannelID:       message.ChannelID,
 		MessageID:       message.ID,
 		Params:          strings.TrimSpace(content[index:]),
@@ -131,6 +137,11 @@ func (d *dispatcher) reactionAdded(added *discordgo.MessageReactionAdd) error {
 		return nil
 	}
 
+	category, err := d.client.ChannelGetCategory(added.ChannelID)
+	if err != nil {
+		return err
+	}
+
 	permissions, err := d.client.UserChannelPermissions(added.UserID, added.ChannelID)
 	if err != nil {
 		return err
@@ -138,9 +149,10 @@ func (d *dispatcher) reactionAdded(added *discordgo.MessageReactionAdd) error {
 
 	for _, r := range reactions {
 		if err := r.Added(d.client, reaction.Event{
-			GuildID:         added.GuildID,
 			UserID:          added.UserID,
 			UserPermissions: permissions,
+			GuildID:         added.GuildID,
+			CategoryID:      category,
 			ChannelID:       added.ChannelID,
 			MessageID:       added.MessageID,
 		}); err != nil {
@@ -157,6 +169,11 @@ func (d *dispatcher) reactionRemoved(added *discordgo.MessageReactionRemove) err
 		return nil
 	}
 
+	category, err := d.client.ChannelGetCategory(added.ChannelID)
+	if err != nil {
+		return err
+	}
+
 	permissions, err := d.client.UserChannelPermissions(added.UserID, added.ChannelID)
 	if err != nil {
 		return err
@@ -164,9 +181,10 @@ func (d *dispatcher) reactionRemoved(added *discordgo.MessageReactionRemove) err
 
 	for _, r := range reactions {
 		if err := r.Removed(d.client, reaction.Event{
-			GuildID:         added.GuildID,
 			UserID:          added.UserID,
 			UserPermissions: permissions,
+			GuildID:         added.GuildID,
+			CategoryID:      category,
 			ChannelID:       added.ChannelID,
 			MessageID:       added.MessageID,
 		}); err != nil {

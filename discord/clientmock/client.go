@@ -47,6 +47,21 @@ func (mr *MockClientMockRecorder) ChannelDelete(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelDelete", reflect.TypeOf((*MockClient)(nil).ChannelDelete), arg0)
 }
 
+// ChannelGetCategory mocks base method.
+func (m *MockClient) ChannelGetCategory(arg0 string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChannelGetCategory", arg0)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChannelGetCategory indicates an expected call of ChannelGetCategory.
+func (mr *MockClientMockRecorder) ChannelGetCategory(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelGetCategory", reflect.TypeOf((*MockClient)(nil).ChannelGetCategory), arg0)
+}
+
 // ChannelMessageDelete mocks base method.
 func (m *MockClient) ChannelMessageDelete(arg0, arg1 string) error {
 	m.ctrl.T.Helper()

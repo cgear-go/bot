@@ -36,6 +36,9 @@ type Client interface {
 	// ChannelMessageDelete
 	ChannelMessageDelete(channelID, messageID string) (err error)
 
+	// ChannelGetCategory
+	ChannelGetCategory(channelID string) (categoryID string, err error)
+
 	// UserChannelPermissionSet
 	UserChannelPermissionSet(channelID, targetID string, allow, deny int64) (err error)
 
