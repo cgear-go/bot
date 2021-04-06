@@ -25,6 +25,9 @@ type Event struct {
 	// GuildID is the guild where the command was performed
 	GuildID string
 
+	// CategoryID is the category where the command was performed
+	CategoryID string
+
 	// ChannelID is the channel where the command was performed
 	ChannelID string
 

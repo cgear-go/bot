@@ -186,6 +186,11 @@ func TestDispatcher__executeCommand(t *testing.T) {
 
 			client.
 				EXPECT().
+				ChannelGetCategory("78").
+				Return("987", nil)
+
+			client.
+				EXPECT().
 				UserChannelPermissions("456", "78").
 				Return(int64(8), nil)
 
@@ -197,9 +202,10 @@ func TestDispatcher__executeCommand(t *testing.T) {
 			testCommand.
 				EXPECT().
 				Execute(gomock.Eq(client), gomock.Eq(command.Event{
-					GuildID:         "123",
 					UserID:          "456",
 					UserPermissions: 8,
+					GuildID:         "123",
+					CategoryID:      "987",
 					ChannelID:       "78",
 					MessageID:       "90",
 					Params:          "a b c",
@@ -293,8 +299,48 @@ func TestDispatcher__executeCommand(t *testing.T) {
 
 			client.
 				EXPECT().
+				ChannelGetCategory("78").
+				Return("987", nil)
+
+			client.
+				EXPECT().
 				UserChannelPermissions("456", "78").
 				Return(int64(0), io.ErrClosedPipe)
+
+			client.
+				EXPECT().
+				ChannelMessageDelete("78", "90").
+				Return(nil)
+
+			g.Assert(dispatcher.executeCommand(&discordgo.MessageCreate{
+				Message: &discordgo.Message{
+					ID:      "90",
+					GuildID: "123",
+					Author: &discordgo.User{
+						ID: "456",
+					},
+					ChannelID: "78",
+				},
+			}, "test a b c ")).Eql(io.ErrClosedPipe)
+		})
+
+		g.It("Return category retrieve error", func() {
+			testCommand := commandmock.NewMockCommand(ctrl)
+			client := clientmock.NewMockClient(ctrl)
+			dispatcher := &dispatcher{
+				session: nil,
+				client:  client,
+				commands: map[string]command.Command{
+					"test": testCommand,
+				},
+				reactions: make(map[string][]reaction.Reaction),
+				closers:   make([]func(), 0, 3),
+			}
+
+			client.
+				EXPECT().
+				ChannelGetCategory("78").
+				Return("987", io.ErrClosedPipe)
 
 			client.
 				EXPECT().
@@ -328,6 +374,11 @@ func TestDispatcher__executeCommand(t *testing.T) {
 
 			client.
 				EXPECT().
+				ChannelGetCategory("78").
+				Return("987", nil)
+
+			client.
+				EXPECT().
 				UserChannelPermissions("456", "78").
 				Return(int64(8), nil)
 
@@ -339,9 +390,10 @@ func TestDispatcher__executeCommand(t *testing.T) {
 			testCommand.
 				EXPECT().
 				Execute(gomock.Eq(client), gomock.Eq(command.Event{
-					GuildID:         "123",
 					UserID:          "456",
 					UserPermissions: 8,
+					GuildID:         "123",
+					CategoryID:      "987",
 					ChannelID:       "78",
 					MessageID:       "90",
 					Params:          "a b c",
@@ -383,15 +435,21 @@ func TestDispatcher__reactionAdded(t *testing.T) {
 
 			client.
 				EXPECT().
+				ChannelGetCategory("78").
+				Return("987", nil)
+
+			client.
+				EXPECT().
 				UserChannelPermissions("456", "78").
 				Return(int64(8), nil)
 
 			testReaction.
 				EXPECT().
 				Added(gomock.Eq(client), gomock.Eq(reaction.Event{
-					GuildID:         "123",
 					UserID:          "456",
 					UserPermissions: 8,
+					GuildID:         "123",
+					CategoryID:      "987",
 					ChannelID:       "78",
 					MessageID:       "90",
 				})).
@@ -435,6 +493,36 @@ func TestDispatcher__reactionAdded(t *testing.T) {
 				},
 			})).IsNil()
 		})
+		g.It("Return permission category error", func() {
+			testReaction := reactionmock.NewMockReaction(ctrl)
+			client := clientmock.NewMockClient(ctrl)
+			dispatcher := &dispatcher{
+				session:  nil,
+				client:   client,
+				commands: make(map[string]command.Command),
+				reactions: map[string][]reaction.Reaction{
+					"cgeargo": {testReaction},
+				},
+				closers: make([]func(), 0, 3),
+			}
+
+			client.
+				EXPECT().
+				ChannelGetCategory("78").
+				Return("987", io.ErrClosedPipe)
+
+			g.Assert(dispatcher.reactionAdded(&discordgo.MessageReactionAdd{
+				MessageReaction: &discordgo.MessageReaction{
+					MessageID: "90",
+					GuildID:   "123",
+					UserID:    "456",
+					ChannelID: "78",
+					Emoji: discordgo.Emoji{
+						Name: "cgeargo",
+					},
+				},
+			})).Eql(io.ErrClosedPipe)
+		})
 
 		g.It("Return permission retrieve error", func() {
 			testReaction := reactionmock.NewMockReaction(ctrl)
@@ -448,6 +536,11 @@ func TestDispatcher__reactionAdded(t *testing.T) {
 				},
 				closers: make([]func(), 0, 3),
 			}
+
+			client.
+				EXPECT().
+				ChannelGetCategory("78").
+				Return("987", nil)
 
 			client.
 				EXPECT().
@@ -482,15 +575,21 @@ func TestDispatcher__reactionAdded(t *testing.T) {
 
 			client.
 				EXPECT().
+				ChannelGetCategory("78").
+				Return("987", nil)
+
+			client.
+				EXPECT().
 				UserChannelPermissions("456", "78").
 				Return(int64(8), nil)
 
 			testReaction.
 				EXPECT().
 				Added(gomock.Eq(client), gomock.Eq(reaction.Event{
-					GuildID:         "123",
 					UserID:          "456",
 					UserPermissions: 8,
+					GuildID:         "123",
+					CategoryID:      "987",
 					ChannelID:       "78",
 					MessageID:       "90",
 				})).
@@ -524,15 +623,21 @@ func TestDispatcher__reactionAdded(t *testing.T) {
 
 			client.
 				EXPECT().
+				ChannelGetCategory("78").
+				Return("987", nil)
+
+			client.
+				EXPECT().
 				UserChannelPermissions("456", "78").
 				Return(int64(8), nil)
 
 			testReaction.
 				EXPECT().
 				Added(gomock.Eq(client), gomock.Eq(reaction.Event{
-					GuildID:         "123",
 					UserID:          "456",
 					UserPermissions: 8,
+					GuildID:         "123",
+					CategoryID:      "987",
 					ChannelID:       "78",
 					MessageID:       "90",
 				})).
@@ -573,15 +678,21 @@ func TestDispatcher__reactionRemoved(t *testing.T) {
 
 			client.
 				EXPECT().
+				ChannelGetCategory("78").
+				Return("987", nil)
+
+			client.
+				EXPECT().
 				UserChannelPermissions("456", "78").
 				Return(int64(8), nil)
 
 			testReaction.
 				EXPECT().
 				Removed(gomock.Eq(client), gomock.Eq(reaction.Event{
-					GuildID:         "123",
 					UserID:          "456",
 					UserPermissions: 8,
+					GuildID:         "123",
+					CategoryID:      "987",
 					ChannelID:       "78",
 					MessageID:       "90",
 				})).
@@ -626,6 +737,37 @@ func TestDispatcher__reactionRemoved(t *testing.T) {
 			})).IsNil()
 		})
 
+		g.It("Return category retrieve error", func() {
+			testReaction := reactionmock.NewMockReaction(ctrl)
+			client := clientmock.NewMockClient(ctrl)
+			dispatcher := &dispatcher{
+				session:  nil,
+				client:   client,
+				commands: make(map[string]command.Command),
+				reactions: map[string][]reaction.Reaction{
+					"cgeargo": {testReaction},
+				},
+				closers: make([]func(), 0, 3),
+			}
+
+			client.
+				EXPECT().
+				ChannelGetCategory("78").
+				Return("987", io.ErrClosedPipe)
+
+			g.Assert(dispatcher.reactionRemoved(&discordgo.MessageReactionRemove{
+				MessageReaction: &discordgo.MessageReaction{
+					MessageID: "90",
+					GuildID:   "123",
+					UserID:    "456",
+					ChannelID: "78",
+					Emoji: discordgo.Emoji{
+						Name: "cgeargo",
+					},
+				},
+			})).Eql(io.ErrClosedPipe)
+		})
+
 		g.It("Return permission retrieve error", func() {
 			testReaction := reactionmock.NewMockReaction(ctrl)
 			client := clientmock.NewMockClient(ctrl)
@@ -638,6 +780,11 @@ func TestDispatcher__reactionRemoved(t *testing.T) {
 				},
 				closers: make([]func(), 0, 3),
 			}
+
+			client.
+				EXPECT().
+				ChannelGetCategory("78").
+				Return("987", nil)
 
 			client.
 				EXPECT().
@@ -672,15 +819,21 @@ func TestDispatcher__reactionRemoved(t *testing.T) {
 
 			client.
 				EXPECT().
+				ChannelGetCategory("78").
+				Return("987", nil)
+
+			client.
+				EXPECT().
 				UserChannelPermissions("456", "78").
 				Return(int64(8), nil)
 
 			testReaction.
 				EXPECT().
 				Removed(gomock.Eq(client), gomock.Eq(reaction.Event{
-					GuildID:         "123",
 					UserID:          "456",
 					UserPermissions: 8,
+					GuildID:         "123",
+					CategoryID:      "987",
 					ChannelID:       "78",
 					MessageID:       "90",
 				})).
@@ -714,15 +867,21 @@ func TestDispatcher__reactionRemoved(t *testing.T) {
 
 			client.
 				EXPECT().
+				ChannelGetCategory("78").
+				Return("987", nil)
+
+			client.
+				EXPECT().
 				UserChannelPermissions("456", "78").
 				Return(int64(8), nil)
 
 			testReaction.
 				EXPECT().
 				Removed(gomock.Eq(client), gomock.Eq(reaction.Event{
-					GuildID:         "123",
 					UserID:          "456",
 					UserPermissions: 8,
+					GuildID:         "123",
+					CategoryID:      "987",
 					ChannelID:       "78",
 					MessageID:       "90",
 				})).

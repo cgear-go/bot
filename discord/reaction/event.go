@@ -16,14 +16,17 @@ package reaction
 
 type Event struct {
 
-	// GuildID is the guild where the action was performed
-	GuildID string
-
 	// UserID is the user that performed the action
 	UserID string
 
 	// UserPermission holds the user permission
 	UserPermissions int64
+
+	// GuildID is the guild where the action was performed
+	GuildID string
+
+	// CategoryID is the category  where the action was performed
+	CategoryID string
 
 	// ChannelID is the channel where the action was performed
 	ChannelID string
