@@ -15,6 +15,7 @@
 package raid
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"sync"
@@ -104,6 +105,10 @@ func (e *engine) createRaid(client client.Client, info raidInfo) (err error) {
 		return err
 	}
 
+	if err := client.MessageReactionAdd(raidChannel, message, "👍"); err != nil {
+		return err
+	}
+
 	if err := e.addUser(client, channel, info.organizerID); err != nil {
 		return err
 	}
@@ -145,6 +150,15 @@ func (e *engine) endRaid(client client.Client, guildID, channelId string) (err e
 	return nil
 }
 
+func (e engine) isUserLocal(l *lobby, userID string) bool {
+	for _, attendee := range l.localAttendees {
+		if attendee == userID {
+			return true
+		}
+	}
+	return false
+}
+
 func (e engine) isUserRemote(l *lobby, userID string) bool {
 	for _, attendee := range l.remoteAttendees {
 		if attendee == userID {
@@ -155,7 +169,70 @@ func (e engine) isUserRemote(l *lobby, userID string) bool {
 }
 
 func (e engine) hasUserJoined(l *lobby, userID string) bool {
-	return e.isUserRemote(l, userID)
+	return userID == l.info.organizerID || e.isUserLocal(l, userID) || e.isUserRemote(l, userID)
+}
+
+func (e engine) joinLocally(client client.Client, channelID, messageID, userID string) (err error) {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+
+	lobby := e.getLobbyByMessage(messageID)
+	if lobby == nil {
+		return nil
+	}
+
+	if e.hasUserJoined(lobby, userID) {
+		return errors.New("user already joined")
+	}
+
+	if err := e.addUser(client, lobby.channelID, userID); err != nil {
+		return err
+	}
+
+	lobby.localAttendees = append(lobby.localAttendees, userID)
+
+	client.ChannelMessageEdit(channelID, messageID, lobby.formatMessage())
+	client.ChannelMessageEdit(lobby.channelID, lobby.announceID, lobby.formatAnnounce())
+	log.Printf("Player joining raid locally (%v): %v", lobby.messageID, userID)
+	return nil
+}
+
+func (e engine) leaveLocally(client client.Client, channelID, messageID, userID string) (err error) {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+
+	lobby := e.getLobbyByMessage(messageID)
+	if lobby == nil {
+		return nil
+	}
+
+	if !e.isUserLocal(lobby, userID) {
+		return nil
+	}
+
+	if err := e.removeUser(client, lobby.channelID, userID); err != nil {
+		return err
+	}
+
+	index := -1
+	for i, attendee := range lobby.localAttendees {
+		if attendee == userID {
+			index = i
+			break
+		}
+	}
+
+	if index > -1 {
+		copy(lobby.localAttendees[index:], lobby.localAttendees[index+1:])
+		lobby.localAttendees[len(lobby.localAttendees)-1] = ""
+		lobby.localAttendees = lobby.localAttendees[:len(lobby.localAttendees)-1]
+	}
+
+	client.ChannelMessageEdit(channelID, messageID, lobby.formatMessage())
+	client.ChannelMessageEdit(lobby.channelID, lobby.announceID, lobby.formatAnnounce())
+
+	log.Printf("Player leaving raid locally (%v): %v", lobby.messageID, userID)
+	return nil
 }
 
 func (e engine) joinRemotely(client client.Client, channelID, messageID, userID string) (err error) {
@@ -168,11 +245,11 @@ func (e engine) joinRemotely(client client.Client, channelID, messageID, userID 
 	}
 
 	if lobby.invitesRemaining == 0 {
-		return nil
+		return errors.New("no more invites")
 	}
 
 	if e.hasUserJoined(lobby, userID) {
-		return nil
+		return errors.New("user already joined")
 	}
 
 	if err := e.addUser(client, lobby.channelID, userID); err != nil {
