@@ -31,21 +31,21 @@ func TestRaidList__Create(t *testing.T) {
 			}
 
 			info := RaidInfo{
+				ID:          "456",
+				LobbyID:     "789",
 				OrganizerID: "123",
 				Level:       "5",
 				Gym:         "Place Stanislas",
 				Start:       time.Now(),
 			}
 
-			raidList.Create("456", "789", info)
+			raidList.Create(info)
 			g.Assert(len(events)).Eql(1)
 
 			g.Assert(events[0].eventType).Eql(eventTypeRaidCreate)
-			payload, ok := events[0].payload.(*createRaidPayload)
+			payload, ok := events[0].payload.(RaidInfo)
 			g.Assert(ok).IsTrue()
-			g.Assert(payload.id).Eql("456")
-			g.Assert(payload.lobbyID).Eql("789")
-			g.Assert(payload.info).Eql(info)
+			g.Assert(payload).Eql(info)
 		})
 	})
 }
