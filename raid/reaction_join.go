@@ -25,16 +25,16 @@ import (
 func registerJoinReaction(dispatcher discord.Dispatcher, engine *engine, config map[string]Config) {
 	dispatcher.AddReaction(
 		reaction.NewReactionBuilder("🙏").
-			AddFilter(func(event reaction.Event) (bool, error) {
+			AddFilter(func(event reaction.Event) bool {
 				engine.lock.Lock()
 				defer engine.lock.Unlock()
 
 				lobby := engine.getLobbyByMessage(event.MessageID)
 				if lobby == nil {
 					log.Println("Lobby is nil")
-					return true, nil
+					return true
 				}
-				return false, nil
+				return false
 			}).
 			OnAdded(func(client client.Client, event reaction.Event) error {
 				err := engine.joinRemotely(client, event.ChannelID, event.MessageID, event.UserID)
@@ -50,16 +50,16 @@ func registerJoinReaction(dispatcher discord.Dispatcher, engine *engine, config 
 
 	dispatcher.AddReaction(
 		reaction.NewReactionBuilder("👍").
-			AddFilter(func(event reaction.Event) (bool, error) {
+			AddFilter(func(event reaction.Event) bool {
 				engine.lock.Lock()
 				defer engine.lock.Unlock()
 
 				lobby := engine.getLobbyByMessage(event.MessageID)
 				if lobby == nil {
 					log.Println("Lobby is nil")
-					return true, nil
+					return true
 				}
-				return false, nil
+				return false
 			}).
 			OnAdded(func(client client.Client, event reaction.Event) error {
 				err := engine.joinLocally(client, event.ChannelID, event.MessageID, event.UserID)

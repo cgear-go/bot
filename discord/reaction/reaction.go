@@ -50,12 +50,7 @@ type reaction struct {
 
 func (r reaction) execute(discord client.Client, event Event, callback ReactionFn) error {
 	for _, filter := range r.filters {
-		skip, err := filter(event)
-		if err != nil {
-			return err
-		}
-
-		if skip {
+		if filter(event) {
 			return nil
 		}
 	}

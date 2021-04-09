@@ -29,8 +29,8 @@ func TestReaction__Emoji(t *testing.T) {
 			reaction := reaction{
 				emoji: "🙏",
 				filters: []FilterFn{
-					func(event Event) (skip bool, err error) {
-						return true, nil
+					func(event Event) (skip bool) {
+						return true
 					},
 				},
 				onAdded:   func(discord client.Client, event Event) (err error) { return io.EOF },
@@ -50,8 +50,8 @@ func TestReaction__Added(t *testing.T) {
 			reaction := reaction{
 				emoji: "🙏",
 				filters: []FilterFn{
-					func(event Event) (skip bool, err error) {
-						return false, nil
+					func(event Event) (skip bool) {
+						return false
 					},
 				},
 				onAdded:   func(discord client.Client, event Event) (err error) { return io.EOF },
@@ -65,8 +65,8 @@ func TestReaction__Added(t *testing.T) {
 			reaction := reaction{
 				emoji: "🙏",
 				filters: []FilterFn{
-					func(event Event) (skip bool, err error) {
-						return true, nil
+					func(event Event) (skip bool) {
+						return true
 					},
 				},
 				onAdded:   func(discord client.Client, event Event) (err error) { return io.EOF },
@@ -74,21 +74,6 @@ func TestReaction__Added(t *testing.T) {
 			}
 
 			g.Assert(reaction.Added(nil, Event{})).Eql(nil)
-		})
-
-		g.It("Should return filters error", func() {
-			reaction := reaction{
-				emoji: "🙏",
-				filters: []FilterFn{
-					func(event Event) (skip bool, err error) {
-						return false, io.ErrClosedPipe
-					},
-				},
-				onAdded:   func(discord client.Client, event Event) (err error) { return io.EOF },
-				onRemoved: nil,
-			}
-
-			g.Assert(reaction.Added(nil, Event{})).Eql(io.ErrClosedPipe)
 		})
 	})
 }
@@ -101,8 +86,8 @@ func TestReaction__Removed(t *testing.T) {
 			reaction := reaction{
 				emoji: "🙏",
 				filters: []FilterFn{
-					func(event Event) (skip bool, err error) {
-						return false, nil
+					func(event Event) (skip bool) {
+						return false
 					},
 				},
 				onAdded:   nil,
@@ -116,8 +101,8 @@ func TestReaction__Removed(t *testing.T) {
 			reaction := reaction{
 				emoji: "🙏",
 				filters: []FilterFn{
-					func(event Event) (skip bool, err error) {
-						return true, nil
+					func(event Event) (skip bool) {
+						return true
 					},
 				},
 				onAdded:   nil,
@@ -125,21 +110,6 @@ func TestReaction__Removed(t *testing.T) {
 			}
 
 			g.Assert(reaction.Removed(nil, Event{})).Eql(nil)
-		})
-
-		g.It("Should return filters error", func() {
-			reaction := reaction{
-				emoji: "🙏",
-				filters: []FilterFn{
-					func(event Event) (skip bool, err error) {
-						return false, io.ErrClosedPipe
-					},
-				},
-				onAdded:   nil,
-				onRemoved: func(discord client.Client, event Event) (err error) { return io.EOF },
-			}
-
-			g.Assert(reaction.Removed(nil, Event{})).Eql(io.ErrClosedPipe)
 		})
 	})
 }
