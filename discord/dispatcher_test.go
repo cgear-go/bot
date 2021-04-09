@@ -39,6 +39,7 @@ func TestDispatcher__Client(t *testing.T) {
 				client:    client,
 				commands:  make(map[string]command.Command),
 				reactions: make(map[string][]reaction.Reaction),
+				messages:  make([]OnMessageFn, 0),
 				closers:   make([]func(), 0, 3),
 			}
 			g.Assert(dispatcher.Client()).Eql(client)
@@ -56,6 +57,7 @@ func TestDispatcher__AddCommand(t *testing.T) {
 				client:    nil,
 				commands:  make(map[string]command.Command),
 				reactions: make(map[string][]reaction.Reaction),
+				messages:  make([]OnMessageFn, 0),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -81,6 +83,7 @@ func TestDispatcher__AddReaction(t *testing.T) {
 				client:    nil,
 				commands:  make(map[string]command.Command),
 				reactions: make(map[string][]reaction.Reaction),
+				messages:  make([]OnMessageFn, 0),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -100,6 +103,7 @@ func TestDispatcher__AddReaction(t *testing.T) {
 				client:    nil,
 				commands:  make(map[string]command.Command),
 				reactions: make(map[string][]reaction.Reaction),
+				messages:  make([]OnMessageFn, 0),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -123,6 +127,28 @@ func TestDispatcher__AddReaction(t *testing.T) {
 	})
 }
 
+func TestDispatcher__OnMessage(t *testing.T) {
+	g := goblin.Goblin(t)
+	g.Describe("dispatcher.OnMessage", func() {
+		g.It("Should add callback to messages", func() {
+			dispatcher := &dispatcher{
+				session:   nil,
+				client:    nil,
+				commands:  make(map[string]command.Command),
+				reactions: make(map[string][]reaction.Reaction),
+				messages:  make([]OnMessageFn, 0),
+				closers:   make([]func(), 0, 3),
+			}
+
+			var callback OnMessageFn = func(*Message) {}
+
+			dispatcher.OnMessage(callback)
+			g.Assert(len(dispatcher.messages)).Eql(1)
+			g.Assert(dispatcher.messages[0]).Eql(callback)
+		})
+	})
+}
+
 func TestDispatcher__commandEndIndex(t *testing.T) {
 	g := goblin.Goblin(t)
 	g.Describe("dispatcher.commandEndIndex", func() {
@@ -132,6 +158,7 @@ func TestDispatcher__commandEndIndex(t *testing.T) {
 				client:    nil,
 				commands:  make(map[string]command.Command),
 				reactions: make(map[string][]reaction.Reaction),
+				messages:  make([]OnMessageFn, 0),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -144,6 +171,7 @@ func TestDispatcher__commandEndIndex(t *testing.T) {
 				client:    nil,
 				commands:  make(map[string]command.Command),
 				reactions: make(map[string][]reaction.Reaction),
+				messages:  make([]OnMessageFn, 0),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -157,6 +185,7 @@ a b c`)).Eql(4)
 				client:    nil,
 				commands:  make(map[string]command.Command),
 				reactions: make(map[string][]reaction.Reaction),
+				messages:  make([]OnMessageFn, 0),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -181,6 +210,7 @@ func TestDispatcher__executeCommand(t *testing.T) {
 					"test": testCommand,
 				},
 				reactions: make(map[string][]reaction.Reaction),
+				messages:  make([]OnMessageFn, 0),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -234,6 +264,7 @@ func TestDispatcher__executeCommand(t *testing.T) {
 					"test": testCommand,
 				},
 				reactions: make(map[string][]reaction.Reaction),
+				messages:  make([]OnMessageFn, 0),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -264,6 +295,7 @@ func TestDispatcher__executeCommand(t *testing.T) {
 					"test": testCommand,
 				},
 				reactions: make(map[string][]reaction.Reaction),
+				messages:  make([]OnMessageFn, 0),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -294,6 +326,7 @@ func TestDispatcher__executeCommand(t *testing.T) {
 					"test": testCommand,
 				},
 				reactions: make(map[string][]reaction.Reaction),
+				messages:  make([]OnMessageFn, 0),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -334,6 +367,7 @@ func TestDispatcher__executeCommand(t *testing.T) {
 					"test": testCommand,
 				},
 				reactions: make(map[string][]reaction.Reaction),
+				messages:  make([]OnMessageFn, 0),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -369,6 +403,7 @@ func TestDispatcher__executeCommand(t *testing.T) {
 					"test": testCommand,
 				},
 				reactions: make(map[string][]reaction.Reaction),
+				messages:  make([]OnMessageFn, 0),
 				closers:   make([]func(), 0, 3),
 			}
 
@@ -430,7 +465,8 @@ func TestDispatcher__reactionAdded(t *testing.T) {
 				reactions: map[string][]reaction.Reaction{
 					"cgeargo": {testReaction},
 				},
-				closers: make([]func(), 0, 3),
+				messages: make([]OnMessageFn, 0),
+				closers:  make([]func(), 0, 3),
 			}
 
 			client.
@@ -478,7 +514,8 @@ func TestDispatcher__reactionAdded(t *testing.T) {
 				reactions: map[string][]reaction.Reaction{
 					"cgeargo": {testReaction},
 				},
-				closers: make([]func(), 0, 3),
+				messages: make([]OnMessageFn, 0),
+				closers:  make([]func(), 0, 3),
 			}
 
 			g.Assert(dispatcher.reactionAdded(&discordgo.MessageReactionAdd{
@@ -503,7 +540,8 @@ func TestDispatcher__reactionAdded(t *testing.T) {
 				reactions: map[string][]reaction.Reaction{
 					"cgeargo": {testReaction},
 				},
-				closers: make([]func(), 0, 3),
+				messages: make([]OnMessageFn, 0),
+				closers:  make([]func(), 0, 3),
 			}
 
 			client.
@@ -534,7 +572,8 @@ func TestDispatcher__reactionAdded(t *testing.T) {
 				reactions: map[string][]reaction.Reaction{
 					"cgeargo": {testReaction},
 				},
-				closers: make([]func(), 0, 3),
+				messages: make([]OnMessageFn, 0),
+				closers:  make([]func(), 0, 3),
 			}
 
 			client.
@@ -570,7 +609,8 @@ func TestDispatcher__reactionAdded(t *testing.T) {
 				reactions: map[string][]reaction.Reaction{
 					"cgeargo": {testReaction},
 				},
-				closers: make([]func(), 0, 3),
+				messages: make([]OnMessageFn, 0),
+				closers:  make([]func(), 0, 3),
 			}
 
 			client.
@@ -618,7 +658,8 @@ func TestDispatcher__reactionAdded(t *testing.T) {
 				reactions: map[string][]reaction.Reaction{
 					"cgeargo": {testReaction, testReaction},
 				},
-				closers: make([]func(), 0, 3),
+				messages: make([]OnMessageFn, 0),
+				closers:  make([]func(), 0, 3),
 			}
 
 			client.
@@ -673,7 +714,8 @@ func TestDispatcher__reactionRemoved(t *testing.T) {
 				reactions: map[string][]reaction.Reaction{
 					"cgeargo": {testReaction},
 				},
-				closers: make([]func(), 0, 3),
+				messages: make([]OnMessageFn, 0),
+				closers:  make([]func(), 0, 3),
 			}
 
 			client.
@@ -721,7 +763,8 @@ func TestDispatcher__reactionRemoved(t *testing.T) {
 				reactions: map[string][]reaction.Reaction{
 					"cgeargo": {testReaction},
 				},
-				closers: make([]func(), 0, 3),
+				messages: make([]OnMessageFn, 0),
+				closers:  make([]func(), 0, 3),
 			}
 
 			g.Assert(dispatcher.reactionRemoved(&discordgo.MessageReactionRemove{
@@ -747,7 +790,8 @@ func TestDispatcher__reactionRemoved(t *testing.T) {
 				reactions: map[string][]reaction.Reaction{
 					"cgeargo": {testReaction},
 				},
-				closers: make([]func(), 0, 3),
+				messages: make([]OnMessageFn, 0),
+				closers:  make([]func(), 0, 3),
 			}
 
 			client.
@@ -778,7 +822,8 @@ func TestDispatcher__reactionRemoved(t *testing.T) {
 				reactions: map[string][]reaction.Reaction{
 					"cgeargo": {testReaction},
 				},
-				closers: make([]func(), 0, 3),
+				messages: make([]OnMessageFn, 0),
+				closers:  make([]func(), 0, 3),
 			}
 
 			client.
@@ -814,7 +859,8 @@ func TestDispatcher__reactionRemoved(t *testing.T) {
 				reactions: map[string][]reaction.Reaction{
 					"cgeargo": {testReaction},
 				},
-				closers: make([]func(), 0, 3),
+				messages: make([]OnMessageFn, 0),
+				closers:  make([]func(), 0, 3),
 			}
 
 			client.
@@ -862,7 +908,8 @@ func TestDispatcher__reactionRemoved(t *testing.T) {
 				reactions: map[string][]reaction.Reaction{
 					"cgeargo": {testReaction, testReaction},
 				},
-				closers: make([]func(), 0, 3),
+				messages: make([]OnMessageFn, 0),
+				closers:  make([]func(), 0, 3),
 			}
 
 			client.
@@ -901,6 +948,137 @@ func TestDispatcher__reactionRemoved(t *testing.T) {
 		})
 	})
 }
+func TestDispatcher__applyMessageCallbacks(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	g := goblin.Goblin(t)
+	g.Describe("dispatcher.applyMessageCallbacks", func() {
+		g.It("Execute callbacks", func() {
+			i := 0
+
+			client := clientmock.NewMockClient(ctrl)
+			dispatcher := &dispatcher{
+				session:   nil,
+				client:    client,
+				commands:  map[string]command.Command{},
+				reactions: make(map[string][]reaction.Reaction),
+				messages: []OnMessageFn{
+					func(*Message) {
+						i++
+					}, func(*Message) {
+						i++
+					},
+				},
+				closers: make([]func(), 0, 3),
+			}
+
+			client.
+				EXPECT().
+				ChannelGetCategory("78").
+				Return("987", nil)
+
+			client.
+				EXPECT().
+				UserChannelPermissions("456", "78").
+				Return(int64(8), nil)
+
+			dispatcher.applyMessageCallbacks(&discordgo.MessageCreate{
+				Message: &discordgo.Message{
+					ID:      "90",
+					GuildID: "123",
+					Author: &discordgo.User{
+						ID: "456",
+					},
+					ChannelID: "78",
+				},
+			})
+
+			g.Assert(i).Eql(2)
+		})
+
+		g.It("Fail silently on permission retrieve error", func() {
+			i := 0
+
+			client := clientmock.NewMockClient(ctrl)
+			dispatcher := &dispatcher{
+				session:   nil,
+				client:    client,
+				commands:  map[string]command.Command{},
+				reactions: make(map[string][]reaction.Reaction),
+				messages: []OnMessageFn{
+					func(*Message) {
+						i++
+					}, func(*Message) {
+						i++
+					},
+				},
+				closers: make([]func(), 0, 3),
+			}
+
+			client.
+				EXPECT().
+				ChannelGetCategory("78").
+				Return("987", nil)
+
+			client.
+				EXPECT().
+				UserChannelPermissions("456", "78").
+				Return(int64(0), io.ErrClosedPipe)
+
+			dispatcher.applyMessageCallbacks(&discordgo.MessageCreate{
+				Message: &discordgo.Message{
+					ID:      "90",
+					GuildID: "123",
+					Author: &discordgo.User{
+						ID: "456",
+					},
+					ChannelID: "78",
+				},
+			})
+
+			g.Assert(i).Eql(0)
+		})
+
+		g.It("Fail silently on category retrieve error", func() {
+			i := 0
+
+			client := clientmock.NewMockClient(ctrl)
+			dispatcher := &dispatcher{
+				session:   nil,
+				client:    client,
+				commands:  map[string]command.Command{},
+				reactions: make(map[string][]reaction.Reaction),
+				messages: []OnMessageFn{
+					func(*Message) {
+						i++
+					}, func(*Message) {
+						i++
+					},
+				},
+				closers: make([]func(), 0, 3),
+			}
+
+			client.
+				EXPECT().
+				ChannelGetCategory("78").
+				Return("987", io.ErrClosedPipe)
+
+			dispatcher.applyMessageCallbacks(&discordgo.MessageCreate{
+				Message: &discordgo.Message{
+					ID:      "90",
+					GuildID: "123",
+					Author: &discordgo.User{
+						ID: "456",
+					},
+					ChannelID: "78",
+				},
+			})
+
+			g.Assert(i).Eql(0)
+		})
+	})
+}
+
 func TestNewDispatcher(t *testing.T) {
 	g := goblin.Goblin(t)
 	g.Describe("TestNewDispatcher", func() {
