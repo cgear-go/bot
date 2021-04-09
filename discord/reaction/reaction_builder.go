@@ -16,7 +16,7 @@ package reaction
 
 import "github.com/cgear-go/bot/discord/client"
 
-type FilterFn func(event Event) (skip bool, err error)
+type FilterFn func(event Event) (skip bool)
 
 type ReactionFn func(discord client.Client, event Event) (err error)
 

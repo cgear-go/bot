@@ -47,12 +47,7 @@ func (c command) Name() (name string) {
 
 func (c command) Execute(client client.Client, event Event) (err error) {
 	for _, filter := range c.filters {
-		skip, err := filter(event)
-		if err != nil {
-			return err
-		}
-
-		if skip {
+		if filter(event) {
 			return nil
 		}
 	}

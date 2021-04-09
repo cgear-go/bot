@@ -34,8 +34,8 @@ func TestCommand__Name(t *testing.T) {
 					{name: "c", parameterType: parameterTypeRest},
 				},
 				filters: []FilterFn{
-					func(event Event) (skip bool, err error) {
-						return true, nil
+					func(event Event) (skip bool) {
+						return true
 					},
 				},
 				resolver: func(client.Client, Event, Arguments) (err error) { return io.EOF },
@@ -93,8 +93,8 @@ func TestCommand__Execute(t *testing.T) {
 					{name: "c", parameterType: parameterTypeRest},
 				},
 				filters: []FilterFn{
-					func(event Event) (skip bool, err error) {
-						return true, nil
+					func(event Event) (skip bool) {
+						return true
 					},
 				},
 				resolver: func(client.Client, Event, Arguments) (err error) { return io.EOF },
@@ -115,25 +115,6 @@ func TestCommand__Execute(t *testing.T) {
 			}
 
 			g.Assert(command.Execute(nil, Event{Params: "1 test"})).Eql(io.EOF)
-		})
-
-		g.It("Should return filters error", func() {
-			command := command{
-				name: "test",
-				parameters: []parameter{
-					{name: "a", parameterType: parameterTypeInt},
-					{name: "b", parameterType: parameterTypeString},
-					{name: "c", parameterType: parameterTypeRest},
-				},
-				filters: []FilterFn{
-					func(event Event) (skip bool, err error) {
-						return false, io.ErrClosedPipe
-					},
-				},
-				resolver: func(client.Client, Event, Arguments) (err error) { return io.EOF },
-			}
-
-			g.Assert(command.Execute(nil, Event{Params: "1 test some text"})).Eql(io.ErrClosedPipe)
 		})
 	})
 }

@@ -126,27 +126,17 @@ func TestCommandBuilderBuilder__AddFilter(t *testing.T) {
 				resolver:   nil,
 			}
 
-			builder.AddFilter(func(Event) (bool, error) {
-				return false, io.EOF
+			builder.AddFilter(func(Event) bool {
+				return false
 			})
 
-			builder.AddFilter(func(Event) (bool, error) {
-				return true, nil
+			builder.AddFilter(func(Event) bool {
+				return true
 			})
 
 			g.Assert(len(builder.filters)).Eql(2)
-
-			{
-				skip, err := builder.filters[0](Event{})
-				g.Assert(skip).Eql(false)
-				g.Assert(err).Eql(io.EOF)
-			}
-
-			{
-				skip, err := builder.filters[1](Event{})
-				g.Assert(skip).Eql(true)
-				g.Assert(err).Eql(nil)
-			}
+			g.Assert(builder.filters[0](Event{})).Eql(false)
+			g.Assert(builder.filters[1](Event{})).Eql(true)
 		})
 	})
 }

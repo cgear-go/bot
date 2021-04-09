@@ -19,7 +19,7 @@ import (
 )
 
 // FilterFn is a function used to filter commands
-type FilterFn func(event Event) (skip bool, err error)
+type FilterFn func(event Event) (skip bool)
 
 // CommandFn is the resolver function for a command
 type CommandFn func(client client.Client, event Event, arguments Arguments) error

@@ -30,12 +30,12 @@ func registerRaidCommand(dispatcher discord.Dispatcher, engine *engine, config m
 			AddString("level").
 			AddString("start").
 			AddRest("gym").
-			AddFilter(func(event command.Event) (bool, error) {
+			AddFilter(func(event command.Event) bool {
 				guild, ok := config[event.GuildID]
 				if !ok {
-					return true, nil
+					return true
 				}
-				return event.ChannelID != guild.RaidChannelID, nil
+				return event.ChannelID != guild.RaidChannelID
 			}).
 			Resolver(func(client client.Client, event command.Event, arguments command.Arguments) error {
 				start := arguments.GetString("start")
