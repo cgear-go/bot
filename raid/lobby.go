@@ -39,6 +39,9 @@ type lobby struct {
 
 	// Players that join the raid remotely
 	remoteAttendees []string
+
+	// Players that join the raid without invites
+	localAttendees []string
 }
 
 func (l lobby) String() string {
@@ -81,12 +84,13 @@ func (l lobby) formatAnnounce() string {
 	return fmt.Sprintf(
 		`%s
 
-Participants :
+Participants :%s
 - <@%s>
 
-Participants invités à distance : %s
+Participants invités à distance :%s
 `,
 		l.String(),
+		l.formatAttendees(l.localAttendees),
 		l.info.organizerID,
 		l.formatAttendees(l.remoteAttendees))
 }

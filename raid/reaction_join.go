@@ -34,13 +34,42 @@ func registerJoinReaction(dispatcher discord.Dispatcher, engine *engine, config 
 					log.Println("Lobby is nil")
 					return true, nil
 				}
-				return lobby.info.organizerID == event.UserID, nil
+				return false, nil
 			}).
 			OnAdded(func(client client.Client, event reaction.Event) error {
-				return engine.joinRemotely(client, event.ChannelID, event.MessageID, event.UserID)
+				err := engine.joinRemotely(client, event.ChannelID, event.MessageID, event.UserID)
+				if err != nil {
+					defer client.MessageReactionRemove(event.ChannelID, event.MessageID, "🙏", event.UserID)
+				}
+				return err
 			}).
 			OnRemoved(func(client client.Client, event reaction.Event) error {
 				return engine.leaveRemotely(client, event.ChannelID, event.MessageID, event.UserID)
+			}).
+			Build())
+
+	dispatcher.AddReaction(
+		reaction.NewReactionBuilder("👍").
+			AddFilter(func(event reaction.Event) (bool, error) {
+				engine.lock.Lock()
+				defer engine.lock.Unlock()
+
+				lobby := engine.getLobbyByMessage(event.MessageID)
+				if lobby == nil {
+					log.Println("Lobby is nil")
+					return true, nil
+				}
+				return false, nil
+			}).
+			OnAdded(func(client client.Client, event reaction.Event) error {
+				err := engine.joinLocally(client, event.ChannelID, event.MessageID, event.UserID)
+				if err != nil {
+					defer client.MessageReactionRemove(event.ChannelID, event.MessageID, "👍", event.UserID)
+				}
+				return err
+			}).
+			OnRemoved(func(client client.Client, event reaction.Event) error {
+				return engine.leaveLocally(client, event.ChannelID, event.MessageID, event.UserID)
 			}).
 			Build())
 }
