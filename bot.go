@@ -45,6 +45,10 @@ func main() {
 			RaidChannelID:  "827457292605325323",
 			RaidCategoryId: "827457054323114004",
 		},
+		"339731167630852097": {
+			RaidChannelID:  "825316713515450368",
+			RaidCategoryId: "825316949033877544",
+		},
 	})
 
 	dispatcher.OnMessage(func(message *discord.Message) {
