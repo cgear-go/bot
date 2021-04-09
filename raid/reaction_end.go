@@ -17,14 +17,26 @@ package raid
 import (
 	"github.com/cgear-go/bot/discord"
 	"github.com/cgear-go/bot/discord/client"
-	"github.com/cgear-go/bot/discord/command"
+	"github.com/cgear-go/bot/discord/reaction"
 )
 
-func registerEndCommand(dispatcher discord.Dispatcher, engine *engine, config map[string]Config) {
-	dispatcher.AddCommand(
-		command.NewCommandBuilder("fin").
-			Resolver(func(client client.Client, event command.Event, arguments command.Arguments) error {
-				return engine.endRaid(client, event.UserID, event.GuildID, event.ChannelID, int(event.UserPermissions))
+func registerEndReaction(dispatcher discord.Dispatcher, engine *engine, config map[string]Config) {
+	dispatcher.AddReaction(
+		reaction.NewReactionBuilder("❌").
+			OnAdded(func(client client.Client, event reaction.Event) error {
+				lobby := engine.getLobbyByMessage(event.MessageID)
+				if lobby == nil {
+					return nil
+				}
+
+				err := engine.endRaid(client, event.UserID, event.GuildID, lobby.channelID, int(event.UserPermissions))
+				if err != nil {
+					defer client.MessageReactionRemove(event.ChannelID, event.MessageID, "❌", event.UserID)
+				}
+				return err
+			}).
+			OnRemoved(func(client client.Client, event reaction.Event) error {
+				return nil
 			}).
 			Build())
 }
