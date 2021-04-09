@@ -37,6 +37,9 @@ type Dispatcher interface {
 	// AddReaction registers a reaction for the dispatcher
 	AddReaction(reaction reaction.Reaction) Dispatcher
 
+	// OnMessage add a callback on messages
+	OnMessage(callback OnMessageFn) Dispatcher
+
 	// Listen for reactions and commands
 	Listen()
 
@@ -58,6 +61,9 @@ type dispatcher struct {
 	// reactions
 	reactions map[string][]reaction.Reaction
 
+	// messages holds messages callback
+	messages []OnMessageFn
+
 	// closers holds close functions
 	closers []func()
 }
@@ -77,6 +83,11 @@ func (d *dispatcher) AddReaction(r reaction.Reaction) Dispatcher {
 		d.reactions[emoji] = make([]reaction.Reaction, 0, 1)
 	}
 	d.reactions[emoji] = append(d.reactions[emoji], r)
+	return d
+}
+
+func (d *dispatcher) OnMessage(callback OnMessageFn) Dispatcher {
+	d.messages = append(d.messages, callback)
 	return d
 }
 
@@ -195,6 +206,32 @@ func (d *dispatcher) reactionRemoved(added *discordgo.MessageReactionRemove) err
 	return nil
 }
 
+func (d *dispatcher) applyMessageCallbacks(added *discordgo.MessageCreate) {
+	category, err := d.client.ChannelGetCategory(added.ChannelID)
+	if err != nil {
+		return
+	}
+
+	permissions, err := d.client.UserChannelPermissions(added.Author.ID, added.ChannelID)
+	if err != nil {
+		return
+	}
+
+	message := &Message{
+		UserID:          added.Author.ID,
+		UserPermissions: permissions,
+		GuildID:         added.GuildID,
+		CategoryID:      category,
+		ChannelID:       added.ChannelID,
+		MessageID:       added.ID,
+		Content:         added.Content,
+	}
+
+	for _, callback := range d.messages {
+		callback(message)
+	}
+}
+
 func (d *dispatcher) Listen() {
 	d.closers = append(d.closers, d.session.AddHandler(func(session *discordgo.Session, message *discordgo.MessageCreate) {
 		if message.Author.ID == session.State.User.ID {
@@ -203,10 +240,12 @@ func (d *dispatcher) Listen() {
 
 		content := strings.TrimSpace(message.Content)
 		if len(content) == 0 {
+			defer d.applyMessageCallbacks(message)
 			return
 		}
 
 		if content[0] != '+' {
+			defer d.applyMessageCallbacks(message)
 			return
 		}
 
@@ -261,6 +300,7 @@ func NewDispatcher(token string) (Dispatcher, error) {
 		client:    &clientImpl{session: connection},
 		commands:  make(map[string]command.Command),
 		reactions: make(map[string][]reaction.Reaction),
+		messages:  make([]OnMessageFn, 0),
 		closers:   make([]func(), 0, 3),
 	}, nil
 }
