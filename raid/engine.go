@@ -109,6 +109,10 @@ func (e *engine) createRaid(client client.Client, info raidInfo) (err error) {
 		return err
 	}
 
+	if err := client.MessageReactionAdd(raidChannel, message, "❌"); err != nil {
+		return err
+	}
+
 	if err := e.addUser(client, channel, info.organizerID); err != nil {
 		return err
 	}
@@ -128,13 +132,17 @@ func (e *engine) createRaid(client client.Client, info raidInfo) (err error) {
 	return nil
 }
 
-func (e *engine) endRaid(client client.Client, guildID, channelId string) (err error) {
+func (e *engine) endRaid(client client.Client, userID, guildID, channelId string, permissions int) (err error) {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 
 	var lobby *lobby = e.getLobbyByChannel(channelId)
 	if lobby == nil {
 		return nil
+	}
+
+	if lobby.info.organizerID != userID && (permissions&discord.PermissionManageChannels) == 0 {
+		return errors.New("user is not authorized to end raid")
 	}
 
 	if err := client.ChannelDelete(lobby.channelID); err != nil {
@@ -315,4 +323,5 @@ func CreateEngine(dispatcher discord.Dispatcher, config map[string]Config) {
 	registerRaidCommand(dispatcher, engine, config)
 	registerEndCommand(dispatcher, engine, config)
 	registerJoinReaction(dispatcher, engine, config)
+	registerEndReaction(dispatcher, engine, config)
 }
