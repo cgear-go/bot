@@ -30,6 +30,11 @@ func main() {
 		log.Fatalf("Failed to retrieve discord token")
 	}
 
+	raidChannelID, ok := os.LookupEnv("RAID_CHANNEL_ID")
+	if !ok {
+		log.Fatalf("Failed to retrieve raid channel ID")
+	}
+
 	dispatcher, err := discord.NewDispatcher(token)
 	if err != nil {
 		log.Fatalf("Failed to connect to discord: %v", err)
@@ -40,6 +45,16 @@ func main() {
 			RaidChannelID:  "827457292605325323",
 			RaidCategoryId: "827457054323114004",
 		},
+	})
+
+	dispatcher.OnMessage(func(message *discord.Message) {
+		if (message.UserPermissions & discord.PermissionManageChannels) > 0 {
+			return
+		}
+
+		if message.ChannelID == raidChannelID {
+			dispatcher.Client().ChannelMessageDelete(message.ChannelID, message.MessageID)
+		}
 	})
 
 	dispatcher.Listen()
