@@ -42,13 +42,9 @@ func (l *raidList) FindByLobby(lobbyID string) (raid *Raid, ok bool) {
 	return nil, false
 }
 
-func (l *raidList) Create(id, lobbyID string, info RaidInfo) {
+func (l *raidList) Create(info RaidInfo) {
 	*(l.events) = append(*(l.events), event{
 		eventType: eventTypeRaidCreate,
-		payload: &createRaidPayload{
-			id:      id,
-			lobbyID: lobbyID,
-			info:    info,
-		},
+		payload:   info,
 	})
 }

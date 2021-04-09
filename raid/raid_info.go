@@ -36,6 +36,12 @@ type raidInfo struct {
 
 type RaidInfo struct {
 
+	// ID is the ID of the raid
+	ID string
+
+	// LobbyID is the ID of the raid lobby
+	LobbyID string
+
 	// OrganizerID is the ID of the raid organizer
 	OrganizerID string
 

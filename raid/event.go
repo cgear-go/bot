@@ -35,15 +35,3 @@ type event struct {
 	// payload is the event payload
 	payload interface{}
 }
-
-// createRaidPayload is the payload when creating raids
-type createRaidPayload struct {
-	// id is the raid ID
-	id string
-
-	// lobbyID is the raid lobby ID
-	lobbyID string
-
-	// info is the raid info
-	info RaidInfo
-}
