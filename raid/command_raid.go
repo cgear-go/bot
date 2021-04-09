@@ -29,7 +29,7 @@ func registerRaidCommand(dispatcher discord.Dispatcher, engine *engine, config m
 		command.NewCommandBuilder("raid").
 			AddString("level").
 			AddString("start").
-			AddString("gym").
+			AddRest("gym").
 			AddFilter(func(event command.Event) (bool, error) {
 				guild, ok := config[event.GuildID]
 				if !ok {
