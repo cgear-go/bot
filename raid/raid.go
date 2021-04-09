@@ -61,3 +61,68 @@ type Raid interface {
 	// TryRemovePlayer removes a player from the raid
 	TryRemovePlayer(userID string) (removed bool)
 }
+
+type raid struct {
+
+	// raidInfo holds the raid info
+	raidInfo *RaidInfo
+
+	// events holds the events to execute
+	events *[]event
+}
+
+func (r *raid) ID() (id string) {
+	return ""
+}
+
+func (r *raid) Lobby() (lobbyID string) {
+	return ""
+}
+
+func (r *raid) OrganizerID() (user string) {
+	return ""
+}
+
+func (r *raid) Level() (level string) {
+	return ""
+}
+
+func (r *raid) Gym() (name string) {
+	return ""
+}
+
+func (r *raid) StartTime() (start time.Time) {
+	return time.Unix(0, 0)
+}
+
+func (r *raid) End() {
+
+}
+
+func (r *raid) PlayerCount() (count int) {
+	return 0
+}
+
+func (r *raid) InvitesRemaining() (count int) {
+	return 0
+}
+
+func (r *raid) GetLocalPlayers() (users []string) {
+	return []string{}
+}
+
+func (r *raid) TryAddLocalPlayer(userID string) (added bool) {
+	return false
+}
+
+func (r *raid) GetRemotePlayers() (users []string) {
+	return []string{}
+}
+
+func (r *raid) TryAddRemotePlayer(userID string) (added bool) {
+	return false
+}
+
+func (r *raid) TryRemovePlayer(userID string) (removed bool) {
+	return false
+}
