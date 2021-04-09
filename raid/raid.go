@@ -14,6 +14,8 @@
 
 package raid
 
+import "time"
+
 // Raid allows to perform operations on raid
 type Raid interface {
 
@@ -23,8 +25,20 @@ type Raid interface {
 	// Lobby returns the raid lobby ID
 	Lobby() (lobbyID string)
 
-	// Info returns the raid info
-	Info() (info RaidInfo)
+	// OrganizerID returns the ID of the raid organizer
+	OrganizerID() (user string)
+
+	// Level returns the raid level
+	Level() (level string)
+
+	// Gym returns the name of the gym where the raid will take place
+	Gym() (name string)
+
+	// StartTime returns the raid launch time
+	StartTime() (start time.Time)
+
+	// End raid
+	End()
 
 	// PlayerCount returns the number of players in the raid
 	PlayerCount() (count int)
@@ -36,14 +50,14 @@ type Raid interface {
 	GetLocalPlayers() (users []string)
 
 	// AddLocalPlayer add a player that will join the raid by its own means
-	TryAddLocalPlayer(userID string)
+	TryAddLocalPlayer(userID string) (added bool)
 
 	// GetRemotePlayers returns the player that will join the raid remotely
 	GetRemotePlayers() (users []string)
 
 	// AddRemotePlayer add a player that will join the raid remotely
-	TryAddRemotePlayer(userID string)
+	TryAddRemotePlayer(userID string) (added bool)
 
-	// End raid
-	End() (err error)
+	// TryRemovePlayer removes a player from the raid
+	TryRemovePlayer(userID string) (removed bool)
 }
