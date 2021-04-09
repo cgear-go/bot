@@ -210,16 +210,15 @@ func (e engine) leaveRemotely(client client.Client, channelID, messageID, userID
 		if attendee == userID {
 			index = i
 			break
-
 		}
 	}
 
 	if index > -1 {
-		lobby.remoteAttendees[index] = lobby.remoteAttendees[len(lobby.remoteAttendees)-1]
+		copy(lobby.remoteAttendees[index:], lobby.remoteAttendees[index+1:])
 		lobby.remoteAttendees[len(lobby.remoteAttendees)-1] = ""
 		lobby.remoteAttendees = lobby.remoteAttendees[:len(lobby.remoteAttendees)-1]
+		lobby.invitesRemaining += 1
 	}
-	lobby.invitesRemaining += 1
 
 	client.ChannelMessageEdit(channelID, messageID, lobby.formatMessage())
 	client.ChannelMessageEdit(lobby.channelID, lobby.announceID, lobby.formatAnnounce())
