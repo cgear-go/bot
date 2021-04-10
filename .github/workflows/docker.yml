@@ -29,5 +29,5 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: docker.pkg.github.com
-          push: true
-          tags: docker.pkg.github.com/cgear-go/bot:latest,docker.pkg.github.com/cgear-go/bot:${{ github.event.release.tag_name }}
+          repository: cgear-go/bot/cgear-go-bot
+          tag_with_ref: true
