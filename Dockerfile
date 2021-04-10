@@ -45,7 +45,12 @@ RUN go build -ldflags="-w -s" -o /tmp/cgear-go-bot .
 # Runtime
 FROM scratch
 
+# Discord client
 ENV DISCORD_TOKEN=""
+
+# Raid module
+ENV RAID_CATEGORY_ID="0"
+ENV RAID_CHANNEL_ID="0"
 
 # Runtime dependencies
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt  /etc/ssl/certs/

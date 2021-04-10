@@ -276,6 +276,7 @@ func (d *dispatcher) Listen() {
 }
 
 func (d *dispatcher) Close() {
+	defer d.session.Close()
 	for _, closer := range d.closers {
 		closer()
 	}
