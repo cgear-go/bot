@@ -12,25 +12,22 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-name: Test
+name: Publish Docker image
 on:
-  pull_request:
-    branches:
-      - trunk
+  release:
+    types: [published]
 jobs:
-  test:
-    strategy:
-      matrix:
-        go: [ '1.16' ]
-        os: [ ubuntu-latest ]
-    runs-on: ${{ matrix.os }}
-    name: Go ${{ matrix.go }} Test
+  push_to_registry:
+    name: Push Docker image to GitHub Packages
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Check code
         uses: actions/checkout@v2
-      - uses: actions/setup-go@v1
-        name: Setup Go
+      - name: Push to GitHub Packages
+        uses: docker/build-push-action@v1
         with:
-          go-version: ${{ matrix.go }}
-      - name: Go Test
-        run: go test ./...
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          repository: cgear-go/bot/cgear-go-bot
+          tag_with_ref: true

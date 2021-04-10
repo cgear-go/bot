@@ -4,7 +4,7 @@
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
 #
-#       http:#www.apache.org/licenses/LICENSE-2.0
+#       http://www.apache.org/licenses/LICENSE-2.0
 #
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,25 +12,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-name: Test
-on:
-  pull_request:
-    branches:
-      - trunk
-jobs:
-  test:
-    strategy:
-      matrix:
-        go: [ '1.16' ]
-        os: [ ubuntu-latest ]
-    runs-on: ${{ matrix.os }}
-    name: Go ${{ matrix.go }} Test
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - uses: actions/setup-go@v1
-        name: Setup Go
-        with:
-          go-version: ${{ matrix.go }}
-      - name: Go Test
-        run: go test ./...
+if [ ! -f .makerc ]; then
+    echo "Please create .makerc file and run this command from repository root directory."
+    exit 1
+fi
+
+source .makerc
+go run ./bot.go
