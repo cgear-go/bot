@@ -30,6 +30,4 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: docker.pkg.github.com
           push: true
-          tags: 
-            - docker.pkg.github.com/cgear-go/bot:latest
-            - docker.pkg.github.com/cgear-go/bot:${{ github.event.release.tag_name }}
+          tags: docker.pkg.github.com/cgear-go/bot:latest,docker.pkg.github.com/cgear-go/bot:${{ github.event.release.tag_name }}
