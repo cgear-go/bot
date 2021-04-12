@@ -12,6 +12,9 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+# The server listening address
+export SERVER_ADDR=:8080
+
 # The Discord Bot token
 export DISCORD_TOKEN=<DISCORD_TOKEN>
 

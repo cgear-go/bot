@@ -15,7 +15,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -25,6 +27,11 @@ import (
 )
 
 func main() {
+	addr, ok := os.LookupEnv("SERVER_ADDR")
+	if !ok {
+		log.Fatalf("Failed to retrieve server addr")
+	}
+
 	token, ok := os.LookupEnv("DISCORD_TOKEN")
 	if !ok {
 		log.Fatalf("Failed to retrieve discord token")
@@ -64,8 +71,20 @@ func main() {
 	dispatcher.Listen()
 	defer dispatcher.Close()
 
+	server := &http.Server{
+		Addr: addr,
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(200)
+			fmt.Fprintln(w, "OK")
+		}),
+	}
+
+	go server.ListenAndServe()
+
 	log.Println("CGear Bot connected to Discord, press Ctrl + C to exit")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
+
+	server.Close()
 }
